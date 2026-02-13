@@ -13,9 +13,9 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-
+import javax.persistence.Column;
 @Entity
-@Table(name = "T_USER")
+@Table(name = "t_user")
 public class User implements Serializable {
 
 
@@ -23,18 +23,20 @@ public class User implements Serializable {
 
 	@Id
 	@GeneratedValue (strategy = GenerationType.IDENTITY)
-	private Long id;   
+	private Long id; 
 	
-	private String firstName; 
-	
+       @Column(name = "first_name")
+       private String firstName;
+
+	@Column(name = "last_name")
 	private String lastName;
-	
+
 	@Temporal(TemporalType.DATE)
+	@Column(name = "date_naissance")
 	private Date dateNaissance;
-	
 	@Enumerated(EnumType.STRING)
-	Role role; 
-	
+	@Column(name = "role")
+	private Role role;
 	public User() {	}
 
 	public User(String firstName, String lastName, Date dateNaissance, Role role) {

@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-timesheet
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: timesheet
+    ports:
+      - "3306:3306"
+    volumes:
+      - timesheetvol:/var/lib/mysql
+
+  timesheet:
+    image: timesheet-siwarbessoud-s1
+    container_name: timesheet-app
+    restart: always
+    ports:
+      - "8082:8082"
+    depends_on:
+      - mysql
+
+volumes:
+  timesheetvol:
