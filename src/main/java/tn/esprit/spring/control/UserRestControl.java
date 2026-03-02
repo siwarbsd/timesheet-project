@@ -1,59 +1,57 @@
 package tn.esprit.spring.control;
 
-import java.util.Date;
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 import tn.esprit.spring.entities.User;
 import tn.esprit.spring.services.IUserService;
+import tn.esprit.spring.dto.UserDTO;
+import tn.esprit.spring.dto.UserCreateDTO;
 
-// userRestControl
-@RestController // = @Controller + @ResponseBody 
+@RestController
 @RequestMapping("/user")
 public class UserRestControl {
 
-	@Autowired 
-	IUserService userService; 
+    @Autowired
+    private IUserService userService;
 
-	
-	// URL : http://localhost:????/????/????/retrieve-all-users
-	@GetMapping("/retrieve-all-users")
-	public List<User> retrieveAllUsers() {
-		return userService.retrieveAllUsers();
-		//return list;
-	}
- 
-	// http://localhost:????/timesheet-devops/retrieve-user/{user-id}
-	@GetMapping("/retrieve-user/{user-id}")
-	public User retrieveUser(@PathVariable("user-id") String userId) {
-		return userService.retrieveUser(userId);
-	}
-	
-	 
+    // GET all users
+    @GetMapping("/retrieve-all-users")
+    public List<User> retrieveAllUsers() {
+        return userService.retrieveAllUsers();
+    }
 
-	// Ajouter User : http://localhost:????/timesheet-devops/add-user 
-	@PostMapping("/add-user")
-	public User addUser(@RequestBody User u) {
-		User user = userService.addUser(u); 
-		return user;
-	}
+    // GET one user - retour DTO
+    @GetMapping("/retrieve-user/{user-id}")
+    public UserDTO retrieveUser(@PathVariable("user-id") String userId) {
+        User user = userService.retrieveUser(userId);
+        return new UserDTO(user);
+    }
 
-	
-	// Supprimer User : 
-	// http://localhost:????/timesheet-devops/remove-user/{user-id}
-	@DeleteMapping("/remove-user/{user-id}") 
-	public void removeUser(@PathVariable("user-id") String userId) { 
-		userService.deleteUser(userId);
-	} 
+    // POST add user - entrée DTO, retour DTO
+    @PostMapping("/add-user")
+    public UserDTO addUser(@RequestBody UserCreateDTO createDTO) {
+        User userToSave = new User();
+        userToSave.setLastName(createDTO.getLastName());
 
-	// Modifier User 
-	// http://localhost:????/timesheet-devops/modify-user 
-	@PutMapping("/modify-user") 
-	public User updateUser(@RequestBody User user) {
-		return userService.updateUser(user);
-	}
-	 
-} 
- 
+        User savedUser = userService.addUser(userToSave);
+        return new UserDTO(savedUser);
+    }
+
+    // PUT update user - retour DTO
+    
+	@PutMapping("/modify-user")
+public UserDTO updateUser(@RequestBody UserCreateDTO updateDTO) {
+    User userToUpdate = new User();
+    userToUpdate.setLastName(updateDTO.getLastName());
+    // Ajoute d'autres champs si tu en as dans le DTO (ex. setEmail, setFirstName...)
+
+    User updatedUser = userService.updateUser(userToUpdate);
+    return new UserDTO(updatedUser);
+}
+    // DELETE user
+    @DeleteMapping("/remove-user/{user-id}")
+    public void removeUser(@PathVariable("user-id") String userId) {
+        userService.deleteUser(userId);
+    }
+}

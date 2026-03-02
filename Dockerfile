@@ -1,10 +1,5 @@
-FROM eclipse-temurin:17-jdk
-
+FROM eclipse-temurin:11-jre
+COPY target/timesheet-devops-1.0.jar /app/timesheet.jar
 WORKDIR /app
-
-COPY target/*.jar app.jar
-
-EXPOSE 8082
-
-ENTRYPOINT ["java","-jar","app.jar"]
+CMD ["java", "-jar", "timesheet.jar"]
 
