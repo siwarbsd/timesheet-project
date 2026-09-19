@@ -1,5 +1,8 @@
-FROM eclipse-temurin:11-jre
-COPY target/timesheet-devops-1.0.jar /app/timesheet.jar
-WORKDIR /app
-CMD ["java", "-jar", "timesheet.jar"]
 
+FROM eclipse-temurin:11-jre
+
+EXPOSE 8082
+
+ADD target/timesheet-devops-1.0.2.jar timesheet-devops-1.0.2.jar
+
+ENTRYPOINT ["java", "-jar", "/timesheet-devops-1.0.2.jar"]
