@@ -1,7 +1,6 @@
 services:
   mysql:
     image: mysql:latest
-    container_name: timesheet-mysql
     environment:
       MYSQL_ROOT_PASSWORD: root123
       MYSQL_DATABASE: timesheet_db
@@ -20,7 +19,6 @@ services:
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
-    container_name: timesheet-phpmyadmin
     restart: unless-stopped
     environment:
       PMA_HOST: mysql
@@ -37,7 +35,6 @@ services:
 
   app:
     image: timesheet-devops:1.0.3
-    container_name: timesheet-app
     ports:
       - "8083:8082"
     depends_on:
