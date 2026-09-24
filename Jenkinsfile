@@ -1,23 +1,34 @@
-
 pipeline {
     agent any
 
     stages {
 
-        stage('GIT') {
+        stage('CHECKOUT') {
             steps {
                 git branch: 'main',
                     url: 'https://github.com/siwarbsd/timesheet-project.git'
             }
         }
 
-        stage('COMPILATION') {
+        stage('CLEAN') {
             steps {
-                sh 'mvn clean install'
+                sh 'mvn clean'
             }
         }
 
-        stage('ANALYSIS') {
+        stage('COMPILE') {
+            steps {
+                sh 'mvn compile'
+            }
+        }
+
+        stage('TEST') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+
+        stage('SONARQUBE') {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     sh 'mvn sonar:sonar'
@@ -25,7 +36,13 @@ pipeline {
             }
         }
 
-        stage('DEPLOY') {
+        stage('PACKAGE') {
+            steps {
+                sh 'mvn package -DskipTests'
+            }
+        }
+
+        stage('NEXUS') {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'nexus',
@@ -55,9 +72,52 @@ EOF
 
         stage('DOCKER BUILD') {
             steps {
-                sh 'docker build -t timesheet-devops:1.0.5 .'
+                sh 'docker build -t siwarbessoud/timesheet-devops:1.0.5 .'
+            }
+        }
+
+        stage('DOCKER PUSH') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_TOKEN'
+                )]) {
+                    sh '''
+                        echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USER" --password-stdin
+                        docker push siwarbessoud/timesheet-devops:1.0.5
+                        docker logout
+                    '''
+                }
+            }
+        }
+
+        stage('KUBERNETES DEPLOY') {
+            steps {
+                sh '''
+                    kubectl apply -f timesheet-deployment.yml
+                '''
+            }
+        }
+
+        stage('KUBERNETES VERIFICATION') {
+            steps {
+                sh '''
+                    kubectl rollout status deployment/timesheet-dep -n chap4
+                    kubectl get pods -n chap4
+                    kubectl get deployments -n chap4
+                '''
             }
         }
     }
-}
 
+    post {
+        success {
+            echo 'Pipeline CI/CD terminée avec succès.'
+        }
+
+        failure {
+            echo 'Pipeline CI/CD échouée.'
+        }
+    }
+}
