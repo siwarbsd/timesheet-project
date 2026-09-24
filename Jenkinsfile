@@ -110,7 +110,16 @@ EOF
             }
         }
     }
-
+         stage('PROMETHEUS') {
+            steps {
+                sh '''
+                    echo "Vérification de Prometheus..."
+                    curl -s http://localhost:9090/-/ready
+                    echo ""
+                    echo "Prometheus est opérationnel."
+                '''
+            }
+        }
     post {
         success {
             echo 'Pipeline CI/CD terminée avec succès.'
