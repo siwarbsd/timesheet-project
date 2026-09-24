@@ -109,8 +109,8 @@ EOF
                 '''
             }
         }
-    }
-         stage('PROMETHEUS') {
+
+        stage('PROMETHEUS') {
             steps {
                 sh '''
                     echo "Vérification de Prometheus..."
@@ -120,6 +120,8 @@ EOF
                 '''
             }
         }
+    }
+
     post {
         success {
             echo 'Pipeline CI/CD terminée avec succès.'
