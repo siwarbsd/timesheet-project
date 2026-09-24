@@ -1,3 +1,4 @@
+```groovy
 pipeline {
     agent any
 
@@ -26,7 +27,29 @@ pipeline {
 
         stage('DEPLOY') {
             steps {
-                sh 'mvn deploy -DskipTests'
+                withCredentials([usernamePassword(
+                    credentialsId: 'nexus',
+                    usernameVariable: 'NEXUS_USER',
+                    passwordVariable: 'NEXUS_SECRET'
+                )]) {
+                    sh '''
+                        cat > settings-nexus.xml <<EOF
+<settings>
+    <servers>
+        <server>
+            <id>nexus</id>
+            <username>${NEXUS_USER}</username>
+            <password>${NEXUS_SECRET}</password>
+        </server>
+    </servers>
+</settings>
+EOF
+
+                        mvn deploy -DskipTests -s settings-nexus.xml
+
+                        rm -f settings-nexus.xml
+                    '''
+                }
             }
         }
 
@@ -37,3 +60,4 @@ pipeline {
         }
     }
 }
+

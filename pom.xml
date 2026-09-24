@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>tn.esprit.spring.services</groupId>
 	<artifactId>timesheet-devops</artifactId>
-	<version>1.0.4</version>
+	<version>1.0.5</version>
 	<name>timesheet-devops</name>
 	<description>tp-spring-jsf-crud</description>
 	<properties>
@@ -58,7 +58,7 @@
 	<!-- Deploy to Nexus -->
 	<distributionManagement>
 		<repository>
-			<id>deploymentRepo</id>
+			<id>nexus</id>
 			<name>Nexus Repository</name>
 			<url>http://localhost:8081/repository/maven-releases/</url>
 		</repository>
