@@ -15,9 +15,9 @@ spec:
     spec:
       containers:
       - name: timesheet
-        image: siwarbsd/timesheet:1.0
+        image: siwarbessoud/timesheet-devops:1.0.5
         ports:
-        - containerPort: 8080
+        - containerPort: 8082
         envFrom:
         - configMapRef:
             name: timesheet-config
