@@ -55,7 +55,7 @@ EOF
 
         stage('DOCKER BUILD') {
             steps {
-                sh 'docker build -t timesheet-devops:1.0.2 .'
+                sh 'docker build -t timesheet-devops:1.0.5 .'
             }
         }
     }
