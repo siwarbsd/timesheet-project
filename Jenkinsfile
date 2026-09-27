@@ -40,6 +40,19 @@ pipeline {
         }
     }
 }
+
+       stage('OWASP REPORT') {
+    steps {
+        publishHTML([
+            allowMissing: false,
+            alwaysLinkToLastBuild: true,
+            keepAll: true,
+            reportDir: 'target',
+            reportFiles: 'dependency-check-report.html',
+            reportName: 'OWASP Dependency-Check Report'
+        ])
+    }
+}
         stage('SONARQUBE') {
             steps {
                 withSonarQubeEnv('SonarQube') {
