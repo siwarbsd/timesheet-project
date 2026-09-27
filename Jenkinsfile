@@ -27,7 +27,19 @@ pipeline {
                 sh 'mvn test'
             }
         }
-
+       stage('OWASP DEPENDENCY-CHECK') {
+    steps {
+        withCredentials([string(
+            credentialsId: 'nvd-api-key',
+            variable: 'NVD_API_KEY'
+        )]) {
+            sh '''
+                NVD_OPTION="-Dnvd.api.key"
+		mvn org.owasp:dependency-check-maven:check "$NVD_OPTION=$NVD_API_KEY"		
+            '''
+        }
+    }
+}
         stage('SONARQUBE') {
             steps {
                 withSonarQubeEnv('SonarQube') {
