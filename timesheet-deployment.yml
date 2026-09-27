@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: timesheet
-        image: siwarbessoud/timesheet-devops:1.0.6
+        image: siwarbessoud/timesheet-devops:1.0.8
         ports:
         - containerPort: 8082
         envFrom:
