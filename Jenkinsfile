@@ -134,6 +134,30 @@ EOF
                 '''
             }
         }
+                stage('DAST - SQLMAP SCAN') {
+            steps {
+                sh '''
+                    kubectl port-forward -n chap4 svc/timesheet-serv 8080:8080 &
+                    PF_PID=$!
+                    sleep 5
+
+                    sqlmap -u "http://127.0.0.1:8080/" \
+                      --batch \
+                      --crawl=2 \
+                      --level=2 \
+                      --risk=1 \
+                      --output-dir=./sqlmap-results \
+                      --forms
+
+                    kill $PF_PID
+                '''
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'sqlmap-results/**', allowEmptyArchive: true
+                }
+            }
+        }
 
         stage('PROMETHEUS') {
             steps {
@@ -156,4 +180,5 @@ EOF
             echo 'Pipeline CI/CD échouée.'
         }
     }
-}
+}                
+       
