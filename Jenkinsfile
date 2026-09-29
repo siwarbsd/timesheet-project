@@ -137,11 +137,11 @@ EOF
                 stage('DAST - SQLMAP SCAN') {
             steps {
                 sh '''
-                    kubectl port-forward -n chap4 svc/timesheet-serv 8080:8080 &
+                    kubectl port-forward -n chap4 svc/timesheet-serv 18080:8080 &
                     PF_PID=$!
-                    sleep 5
+                    sleep 8
 
-                    sqlmap -u "http://127.0.0.1:8080/" \
+                    sqlmap -u "http://127.0.0.1:18080/" \
                       --batch \
                       --crawl=2 \
                       --level=2 \
@@ -149,7 +149,7 @@ EOF
                       --output-dir=./sqlmap-results \
                       --forms
 
-                    kill $PF_PID
+                    kill $PF_PID || true
                 '''
             }
             post {
