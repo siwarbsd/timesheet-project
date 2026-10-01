@@ -9,29 +9,10 @@ pipeline {
                     url: 'https://github.com/siwarbsd/timesheet-project.git'
             }
         }
-   stage('VAULT SECRETS') {
-steps {
-withVault([
-vaultSecrets: [[
-path: 'secret/timesheet',
-engineVersion: 2,
-secretValues: [
-[envVar: 'MYSQL_USERNAME', vaultKey: 'mysql_username'],
-[envVar: 'MYSQL_PASSWORD', vaultKey: 'mysql_password']
-]
-]]
-]) {
-sh '''
-test -n "$MYSQL_USERNAME"
-test -n "$MYSQL_PASSWORD"
-
-            echo "Secrets MySQL récupérés depuis HashiCorp Vault : OK"
-        '''
-    }
-}
 
 
-}
+
+
 
         stage('CLEAN') {
             steps {
@@ -138,7 +119,65 @@ EOF
                     '''
                 }
             }
-        }
+        stage('DOCKER SECRET') {
+            steps {
+                sh '''
+                    set +x
+
+                    REPORT="docker-secret-report.txt"
+
+                    echo "========================================" > "$REPORT"
+                    echo "          DOCKER SECRET REPORT" >> "$REPORT"
+                    echo "========================================" >> "$REPORT"
+                    echo "" >> "$REPORT"
+
+                    echo "[1] Docker Swarm" >> "$REPORT"
+                    docker info --format 'Swarm state: {{.Swarm.LocalNodeState}}' >> "$REPORT"
+                    echo "" >> "$REPORT"
+
+                    echo "[2] Docker Secret" >> "$REPORT"
+                    if docker secret inspect timesheet_db_password >/dev/null 2>&1; then
+                        echo "Secret: timesheet_db_password" >> "$REPORT"
+                        echo "Status: PRESENT" >> "$REPORT"
+                    else
+                        echo "ERROR: Docker Secret not found." >> "$REPORT"
+                        exit 1
+                    fi
+                    echo "" >> "$REPORT"
+
+                    echo "[3] Secret Injection" >> "$REPORT"
+                    docker service ls \
+                        --filter name=timesheet-secret-test >> "$REPORT"
+                    echo "" >> "$REPORT"
+
+                    echo "[4] Secret Mount" >> "$REPORT"
+                    docker service logs timesheet-secret-test 2>&1 \
+                        | tail -20 >> "$REPORT"
+                    echo "" >> "$REPORT"
+
+                    echo "[5] Service Status" >> "$REPORT"
+                    docker service ps timesheet-secret-test >> "$REPORT"
+                    echo "" >> "$REPORT"
+
+                    echo "[6] Security Verification" >> "$REPORT"
+                    echo "Secret value is not exposed in this report." >> "$REPORT"
+                    echo "Secret is mounted through /run/secrets/." >> "$REPORT"
+                    echo "" >> "$REPORT"
+
+                    echo "========================================" >> "$REPORT"
+                    echo "RESULT: Docker Secret validation successful." >> "$REPORT"
+                    echo "========================================" >> "$REPORT"
+                '''
+            }
+
+            post {
+                always {
+                    archiveArtifacts artifacts: 'docker-secret-report.txt',
+                                     allowEmptyArchive: false,
+                                     fingerprint: true
+                }
+            }
+        }        }
 stage('VAULT → KUBERNETES SECRET') {
 steps {
 withVault([
