@@ -9,6 +9,29 @@ pipeline {
                     url: 'https://github.com/siwarbsd/timesheet-project.git'
             }
         }
+   stage('VAULT SECRETS') {
+steps {
+withVault([
+vaultSecrets: [[
+path: 'secret/timesheet',
+engineVersion: 2,
+secretValues: [
+[envVar: 'MYSQL_USERNAME', vaultKey: 'mysql_username'],
+[envVar: 'MYSQL_PASSWORD', vaultKey: 'mysql_password']
+]
+]]
+]) {
+sh '''
+test -n "$MYSQL_USERNAME"
+test -n "$MYSQL_PASSWORD"
+
+            echo "Secrets MySQL récupérés depuis HashiCorp Vault : OK"
+        '''
+    }
+}
+
+
+}
 
         stage('CLEAN') {
             steps {
