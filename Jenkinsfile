@@ -139,6 +139,36 @@ EOF
                 }
             }
         }
+stage('VAULT → KUBERNETES SECRET') {
+steps {
+withVault([
+vaultSecrets: [[
+path: 'secret/timesheet',
+engineVersion: 2,
+secretValues: [
+[envVar: 'MYSQL_USERNAME', vaultKey: 'mysql_username'],
+[envVar: 'MYSQL_PASSWORD', vaultKey: 'mysql_password']
+]
+]]
+]) {
+sh '''
+set +x
+
+```
+            kubectl create secret generic timesheet-secret \
+                -n chap4 \
+                --from-literal=DB_USER="$MYSQL_USERNAME" \
+                --from-literal=DB_PASSWORD="$MYSQL_PASSWORD" \
+                --dry-run=client \
+                -o yaml | kubectl apply -f -
+
+            echo "Kubernetes Secret synchronisé depuis HashiCorp Vault."
+        '''
+    }
+}
+```
+
+}
 
         stage('KUBERNETES DEPLOY') {
             steps {
