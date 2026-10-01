@@ -119,6 +119,7 @@ EOF
                     '''
                 }
             }
+          }
         stage('DOCKER SECRET') {
             steps {
                 sh '''
