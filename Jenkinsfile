@@ -141,12 +141,14 @@ EOF
                     PF_PID=$!
                     sleep 8
 
-                                        # Lance sqlmap sur l'endpoint réel identifié (PathVariable user-id)
-                    sqlmap -u "http://127.0.0.1:18080/timesheet-devops/user/retrieve-user/1*" \
-                      --batch \
-                      --level=3 \
-                      --risk=2 \
-                      --output-dir=./sqlmap-results
+                    mkdir -p sqlmap-results
+
+sqlmap -u "http://127.0.0.1:18080/timesheet-devops/user/retrieve-user/1*" \
+  --batch \
+  --level=3 \
+  --risk=2 \
+  --output-dir=./sqlmap-results \
+  2>&1 | tee sqlmap-results/sqlmap-report.txt
 
                     kill $PF_PID || true
                 '''
