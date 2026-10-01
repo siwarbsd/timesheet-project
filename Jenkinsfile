@@ -154,7 +154,7 @@ secretValues: [
 sh '''
 set +x
 
-```
+
             kubectl create secret generic timesheet-secret \
                 -n chap4 \
                 --from-literal=DB_USER="$MYSQL_USERNAME" \
@@ -166,7 +166,6 @@ set +x
         '''
     }
 }
-```
 
 }
 
