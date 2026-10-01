@@ -178,7 +178,7 @@ EOF
                                      fingerprint: true
                 }
             }
-        }        }
+        }
 stage('VAULT → KUBERNETES SECRET') {
 steps {
 withVault([
