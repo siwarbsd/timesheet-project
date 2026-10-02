@@ -281,16 +281,57 @@ stage('SECURITY SMOKE TESTS') {
             echo "Starting OWASP ZAP Baseline Scan..."
             echo "========================================"
 
-            docker run --rm \
-                --network host \
-                -v "$WORKSPACE:/zap/wrk/:rw" \
-                ghcr.io/zaproxy/zaproxy:stable \
-                zap-baseline.py \
-                -t http://127.0.0.1:18080 \
-                -r "$ZAP_HTML" \
-                -J "$ZAP_JSON" \
-                || true
+                          echo ""
+              echo "========================================"
+              echo "Starting OWASP ZAP Baseline Scan..."
+              echo "========================================"
 
+              mkdir -p "$WORKSPACE/zap-reports"
+              chmod 777 "$WORKSPACE/zap-reports"
+
+                            mkdir -p "$WORKSPACE/zap-reports"
+              chmod 777 "$WORKSPACE/zap-reports"
+
+              docker run --rm \
+                  --network host \
+                  -v "$WORKSPACE/zap-reports:/zap/wrk/:rw" \
+                  ghcr.io/zaproxy/zaproxy:stable \
+                  zap-baseline.py \
+                  -t http://127.0.0.1:18080/timesheet-devops/ \
+                  -r zap-baseline-report.html \
+                  -J zap-baseline-report.json \
+                  || true
+
+              cp "$WORKSPACE/zap-reports/zap-baseline-report.html" \
+                 "$WORKSPACE/zap-baseline-report.html" 2>/dev/null || true
+
+              cp "$WORKSPACE/zap-reports/zap-baseline-report.json" \
+                 "$WORKSPACE/zap-baseline-report.json" 2>/dev/null || true
+
+              echo "Reports generated:"
+              ls -lh \
+                  "$NMAP_REPORT" \
+                  "$ZAP_HTML" \
+                  "$ZAP_JSON"
+
+              echo ""
+              echo "ZAP scan completed."
+
+              if [ -f "$WORKSPACE/zap-reports/zap-baseline-report.html" ]; then
+                  cp "$WORKSPACE/zap-reports/zap-baseline-report.html" \
+                     "$WORKSPACE/zap-baseline-report.html"
+              fi
+
+              if [ -f "$WORKSPACE/zap-reports/zap-baseline-report.json" ]; then
+                  cp "$WORKSPACE/zap-reports/zap-baseline-report.json" \
+                     "$WORKSPACE/zap-baseline-report.json"
+              fi
+
+              echo "Reports generated:"
+              ls -lh \
+                  "$NMAP_REPORT" \
+                  "$ZAP_HTML" \
+                  "$ZAP_JSON"
             echo ""
             echo "Security Smoke Tests completed."
             echo "Reports generated:"
