@@ -309,7 +309,8 @@ stage('SECURITY SMOKE TESTS') {
             fingerprint: true
         }
     }
-}                         stage('DAST - SQLMAP SCAN') {
+        }
+        stage('DAST - SQLMAP SCAN') {
             steps {
                 sh '''
                     kubectl port-forward -n chap4 svc/timesheet-serv 18080:8080 &
