@@ -226,7 +226,90 @@ set +x
                 '''
             }
         }
-                stage('DAST - SQLMAP SCAN') {
+stage('SECURITY SMOKE TESTS') {
+    steps {
+        sh '''
+            set +x
+
+            NMAP_REPORT="nmap-security-report.txt"
+            ZAP_HTML="zap-baseline-report.html"
+            ZAP_JSON="zap-baseline-report.json"
+
+            echo "========================================" > "$NMAP_REPORT"
+            echo "       NMAP SECURITY SMOKE TEST" >> "$NMAP_REPORT"
+            echo "========================================" >> "$NMAP_REPORT"
+            echo "" >> "$NMAP_REPORT"
+
+            echo "Starting Kubernetes port-forward..."
+
+            kubectl port-forward -n chap4 svc/timesheet-serv 18080:8080 \
+                > /tmp/timesheet-port-forward.log 2>&1 &
+            PF_PID=$!
+
+            cleanup() {
+                kill "$PF_PID" 2>/dev/null || true
+            }
+            trap cleanup EXIT
+
+            echo "Waiting for application on port 18080..."
+
+            for i in $(seq 1 15); do
+                if curl -s http://127.0.0.1:18080 >/dev/null 2>&1; then
+                    echo "Application is reachable."
+                    break
+                fi
+                sleep 2
+            done
+
+            if ! curl -s http://127.0.0.1:18080 >/dev/null 2>&1; then
+                echo "ERROR: Application is not reachable on port 18080."
+                cat /tmp/timesheet-port-forward.log
+                exit 1
+            fi
+
+            echo "[1] Nmap port scan" >> "$NMAP_REPORT"
+            echo "Target: 127.0.0.1:18080" >> "$NMAP_REPORT"
+            echo "" >> "$NMAP_REPORT"
+
+            nmap -Pn -p 18080 localhost \
+                -oN "$NMAP_REPORT"
+
+            echo "" >> "$NMAP_REPORT"
+            echo "Nmap security smoke test completed." >> "$NMAP_REPORT"
+
+            echo "========================================"
+            echo "Starting OWASP ZAP Baseline Scan..."
+            echo "========================================"
+
+            docker run --rm \
+                --network host \
+                -v "$WORKSPACE:/zap/wrk/:rw" \
+                ghcr.io/zaproxy/zaproxy:stable \
+                zap-baseline.py \
+                -t http://127.0.0.1:18080 \
+                -r "$ZAP_HTML" \
+                -J "$ZAP_JSON" \
+                || true
+
+            echo ""
+            echo "Security Smoke Tests completed."
+            echo "Reports generated:"
+            ls -lh "$NMAP_REPORT" "$ZAP_HTML" "$ZAP_JSON"
+        '''
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: '''
+                nmap-security-report.txt,
+                zap-baseline-report.html,
+                zap-baseline-report.json
+            ''',
+            allowEmptyArchive: false,
+            fingerprint: true
+        }
+    }
+}                         stage('DAST - SQLMAP SCAN') {
             steps {
                 sh '''
                     kubectl port-forward -n chap4 svc/timesheet-serv 18080:8080 &
