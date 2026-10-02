@@ -376,7 +376,62 @@ sqlmap -u "http://127.0.0.1:18080/timesheet-devops/user/retrieve-user/1*" \
                 }
             }
         }
+stage('SAFETY CHECKS - OSQUERY') {
+    steps {
+        sh '''
+            set +x
 
+            echo "========================================"
+            echo "       OSQUERY SAFETY CHECKS"
+            echo "========================================"
+
+            mkdir -p osquery-results
+
+            echo "[1] OSQuery version"
+            sudo -u jenkins osqueryi --version \
+                > osquery-results/osquery-version.txt 2>&1
+
+            echo "[2] System information"
+            sudo -u jenkins osqueryi \
+                "SELECT hostname, computer_name, cpu_brand, physical_memory FROM system_info;" \
+                > osquery-results/system-info.txt 2>&1
+
+            echo "[3] Local users"
+            sudo -u jenkins osqueryi \
+                "SELECT uid, username, directory, shell FROM users;" \
+                > osquery-results/users.txt 2>&1
+
+            echo "[4] Running processes"
+            sudo -u jenkins osqueryi \
+                "SELECT pid, name, path, cmdline FROM processes;" \
+                > osquery-results/processes.txt 2>&1
+
+            echo "[5] Listening network ports"
+            sudo -u jenkins osqueryi \
+                "SELECT address, port, protocol, pid, process.name FROM listening_ports LEFT JOIN processes AS process ON listening_ports.pid = process.pid;" \
+                > osquery-results/listening-ports.txt 2>&1
+
+            echo "[6] Installed packages"
+            sudo -u jenkins osqueryi \
+                "SELECT name, version FROM deb_packages;" \
+                > osquery-results/packages.txt 2>&1
+
+            echo "========================================"
+            echo "OSQUERY SAFETY CHECKS completed."
+            echo "========================================"
+
+            ls -lh osquery-results/
+        '''
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: 'osquery-results/**',
+                             allowEmptyArchive: false,
+                             fingerprint: true
+        }
+    }
+}
         stage('PROMETHEUS') {
             steps {
                 sh '''
