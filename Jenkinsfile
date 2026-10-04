@@ -432,6 +432,56 @@ stage('SAFETY CHECKS - OSQUERY') {
         }
     }
 }
+        stage('HIDS - FAIL2BAN') {
+            steps {
+                sh '''
+                    set +x
+
+                    mkdir -p fail2ban-results
+                    REPORT="fail2ban-results/fail2ban-report.txt"
+
+                    echo "========================================" > "$REPORT"
+                    echo "       HIDS - FAIL2BAN SECURITY CHECK" >> "$REPORT"
+                    echo "========================================" >> "$REPORT"
+                    echo "" >> "$REPORT"
+
+                    echo "[1] Fail2Ban service status" >> "$REPORT"
+                    systemctl is-active fail2ban >> "$REPORT"
+
+                    echo "" >> "$REPORT"
+                    echo "[2] Fail2Ban jails" >> "$REPORT"
+                    fail2ban-client status >> "$REPORT"
+
+                    echo "" >> "$REPORT"
+                    echo "[3] Jenkins jail status" >> "$REPORT"
+                    fail2ban-client status jenkins >> "$REPORT"
+
+                    echo "" >> "$REPORT"
+                    echo "[4] Jenkins access log" >> "$REPORT"
+                    ls -lh /var/log/jenkins/access_log >> "$REPORT"
+
+                    echo "" >> "$REPORT"
+                    echo "[5] Recent Jenkins access events" >> "$REPORT"
+                    tail -20 /var/log/jenkins/access_log >> "$REPORT"
+
+                    echo "" >> "$REPORT"
+                    echo "========================================" >> "$REPORT"
+                    echo "RESULT: HIDS - Fail2Ban validation successful." >> "$REPORT"
+                    echo "========================================" >> "$REPORT"
+
+                    cat "$REPORT"
+                '''
+            }
+
+            post {
+                always {
+                    archiveArtifacts artifacts: 'fail2ban-results/**',
+                                     allowEmptyArchive: false,
+                                     fingerprint: true
+                }
+            }
+        }
+
         stage('PROMETHEUS') {
             steps {
                 sh '''
