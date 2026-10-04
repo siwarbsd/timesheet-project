@@ -183,6 +183,7 @@ stage('VAULT → KUBERNETES SECRET') {
 steps {
 withVault([
 configuration: [
+    vaultUrl: 'http://127.0.0.1:8200',
     vaultCredentialId: 'vault-timesheet'
 ],
 vaultSecrets: [[
