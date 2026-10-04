@@ -458,7 +458,7 @@ stage('SAFETY CHECKS - OSQUERY') {
 
                     echo "" >> "$REPORT"
                     echo "[3] Jenkins jail status" >> "$REPORT"
-                    fail2ban-client status jenkins >> "$REPORT"
+                    sudo /usr/bin/fail2ban-client status jenkins >> "$REPORT"
 
                     echo "" >> "$REPORT"
                     echo "[4] Jenkins access log" >> "$REPORT"
