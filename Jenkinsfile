@@ -407,9 +407,9 @@ stage('SAFETY CHECKS - OSQUERY') {
                 > osquery-results/processes.txt 2>&1
 
             echo "[5] Listening network ports"
-            /usr/bin/osqueryi \
-                "SELECT address, port, protocol, pid, process.name FROM listening_ports LEFT JOIN processes AS process ON listening_ports.pid = process.pid;" \
-                > osquery-results/listening-ports.txt 2>&1
+/usr/bin/osqueryi \
+    "SELECT listening_ports.address, listening_ports.port, listening_ports.protocol, listening_ports.pid, process.name FROM listening_ports LEFT JOIN processes AS process ON listening_ports.pid = process.pid;" \
+    > osquery-results/listening-ports.txt 2>&1
 
             echo "[6] Installed packages"
             /usr/bin/osqueryi \
