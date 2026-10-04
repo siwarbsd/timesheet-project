@@ -182,7 +182,9 @@ EOF
 stage('VAULT → KUBERNETES SECRET') {
 steps {
 withVault([
-vaultCredentialsId: 'vault-timesheet',
+configuration: [
+    vaultCredentialId: 'vault-timesheet'
+],
 vaultSecrets: [[
 path: 'secret/timesheet',
 engineVersion: 2,
