@@ -355,6 +355,61 @@ stage('SECURITY SMOKE TESTS') {
         }
     }
         }
+        stage('CHAOS MONKEY - FAULT INJECTION') {
+            steps {
+                sh '''
+                    set -e
+
+                    echo "=== CHAOS MONKEY / KUBE-MONKEY ==="
+
+                    kubectl get deployment kube-monkey -n kube-monkey
+
+                    echo "=== CIBLE ==="
+                    kubectl get deployment timesheet-dep -n chap4                         -o jsonpath='{.metadata.labels}'
+                    echo ""
+
+                    echo "=== PODS AVANT TEST ==="
+                    kubectl get pods -n chap4 -l app=timesheet -o wide
+
+                    echo "=== REDÉMARRAGE KUBE-MONKEY ==="
+                    kubectl rollout restart deployment/kube-monkey -n kube-monkey
+                    kubectl rollout status deployment/kube-monkey -n kube-monkey
+
+                    echo "=== ATTENTE DU CYCLE CHAOS ==="
+
+                    for i in $(seq 1 20); do
+                        if kubectl logs deployment/kube-monkey                             -n kube-monkey                             --since=2m 2>/dev/null                             | grep -q '\[DryRun Mode\].*timesheet-dep'; then
+                            break
+                        fi
+                        sleep 5
+                    done
+
+                    mkdir -p chaos-results
+
+                    echo "=== KUBE-MONKEY LOG ==="
+                    kubectl logs deployment/kube-monkey                         -n kube-monkey                         --since=2m                         | tee chaos-results/kube-monkey-report.txt
+
+                    echo "=== VERIFICATION DRY RUN ==="
+                    grep -q '\[DryRun Mode\]' chaos-results/kube-monkey-report.txt
+                    grep -q 'timesheet-dep' chaos-results/kube-monkey-report.txt
+
+                    echo "=== PODS APRES TEST ==="
+                    kubectl get pods -n chap4 -l app=timesheet -o wide                         | tee -a chaos-results/kube-monkey-report.txt
+
+                    echo "=== DEPLOYMENT ==="
+                    kubectl get deployment timesheet-dep -n chap4                         | tee -a chaos-results/kube-monkey-report.txt
+
+                    echo "Fault Injection Chaos Monkey : TEST DRY-RUN REUSSI"
+                '''
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'chaos-results/**',
+                        allowEmptyArchive: true
+                }
+            }
+        }
+
         stage('DAST - SQLMAP SCAN') {
             steps {
                 sh '''
