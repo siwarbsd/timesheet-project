@@ -139,7 +139,7 @@
 
     - name: Read hardening report
       ansible.builtin.slurp:
-        src: /tmp/ansible-hardening/server-hardening-report.txt
+        src: ansible-results/server-hardening-report.txt
       register: hardening_report
       when: not ansible_check_mode
 
