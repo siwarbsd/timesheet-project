@@ -710,6 +710,156 @@ stage('SAFETY CHECKS - OSQUERY') {
                 }
             }
         }
+
+        stage('CONTINUOUS SCANNING - OPENSCAP') {
+            steps {
+                sh '''
+                    set -e
+
+                    mkdir -p openscap-results
+
+                    DATASTREAM="tools/openscap/ssg/ssg-ubuntu2404-ds.xml"
+                    PROFILE="xccdf_org.ssgproject.content_profile_cis_level1_server"
+                    RESULTS="openscap-results/openscap-results.xml"
+                    REPORT="openscap-results/openscap-report.html"
+                    SUMMARY="openscap-results/openscap-summary.txt"
+
+                    echo "========================================"
+                    echo "     CONTINUOUS SCANNING - OPENSCAP"
+                    echo "========================================"
+
+                    echo "[1] OPENSCAP"
+
+                    command -v oscap >/dev/null 2>&1 || {
+                        echo "ERROR: oscap introuvable"
+                        exit 1
+                    }
+
+                    oscap --version | head -1
+
+                    echo ""
+                    echo "[2] DATASTREAM"
+
+                    test -r "$DATASTREAM" || {
+                        echo "ERROR: DataStream OpenSCAP introuvable : $DATASTREAM"
+                        exit 1
+                    }
+
+                    echo "DataStream Ubuntu 24.04 : OK"
+
+                    echo ""
+                    echo "[3] PROFILE"
+
+                    oscap info "$DATASTREAM" | grep -q "$PROFILE" || {
+                        echo "ERROR: profil OpenSCAP introuvable"
+                        exit 1
+                    }
+
+                    echo "CIS Ubuntu 24.04 Level 1 Server : OK"
+
+                    echo ""
+                    echo "[4] SCAN"
+
+                    set +e
+
+                    oscap xccdf eval \
+                        --profile "$PROFILE" \
+                        --results "$RESULTS" \
+                        --report "$REPORT" \
+                        "$DATASTREAM"
+
+                    SCAN_RC=$?
+
+                    set -e
+
+                    test -s "$RESULTS" || {
+                        echo "ERROR: résultat OpenSCAP non généré"
+                        exit 1
+                    }
+
+                    test -s "$REPORT" || {
+                        echo "ERROR: rapport HTML OpenSCAP non généré"
+                        exit 1
+                    }
+
+                    echo ""
+                    echo "Code retour OpenSCAP : $SCAN_RC"
+            if [ "$SCAN_RC" -gt 1 ]; then
+                echo "ERROR: erreur d'exécution OpenSCAP (code $SCAN_RC)"
+                exit "$SCAN_RC"
+            fi
+
+                    echo ""
+                    echo "[5] RESULTS"
+
+                    read_counts=$(python3 - "$RESULTS" <<'PYCOUNTS'
+import sys
+import xml.etree.ElementTree as ET
+from collections import Counter
+
+root = ET.parse(sys.argv[1]).getroot()
+counts = Counter()
+
+for element in root.iter():
+    if element.tag.endswith("result") and element.text:
+        counts[element.text.strip()] += 1
+
+print(
+    counts.get("pass", 0),
+    counts.get("fail", 0),
+    counts.get("notapplicable", 0),
+    counts.get("notselected", 0)
+)
+PYCOUNTS
+                    )
+
+                    read -r PASS FAIL NOT_APPLICABLE NOT_SELECTED <<EOF_COUNTS
+$read_counts
+EOF_COUNTS
+
+                    {
+                        echo "========================================"
+                        echo "     CONTINUOUS SCANNING - OPENSCAP"
+                        echo "========================================"
+                        echo ""
+                        echo "OS      : $(. /etc/os-release && echo "$PRETTY_NAME")"
+                        echo "Profile : CIS Ubuntu Linux 24.04 LTS Benchmark for Level 1 - Server"
+                        echo "Scanner : $(oscap --version | head -1)"
+                        echo ""
+                        echo "RESULTS"
+                        echo "-------"
+                        echo "PASS          : $PASS"
+                        echo "FAIL          : $FAIL"
+                        echo "NOT APPLICABLE: $NOT_APPLICABLE"
+                        echo "NOT SELECTED  : $NOT_SELECTED"
+                        echo ""
+                        echo "OpenSCAP exit code : $SCAN_RC"
+                        echo ""
+                        echo "========================================"
+                        echo "STATUS: SCAN COMPLETED"
+                        echo "========================================"
+                    } > "$SUMMARY"
+
+                    cat "$SUMMARY"
+
+                    echo ""
+                    echo "Rapport HTML : $REPORT"
+                    echo "Résultats XML : $RESULTS"
+                    echo "Résumé : $SUMMARY"
+
+                    echo ""
+                    echo "Continuous Scanning OpenSCAP : SCAN COMPLETED"
+                '''
+            }
+
+            post {
+                always {
+                    archiveArtifacts artifacts: 'openscap-results/**',
+                                     allowEmptyArchive: false,
+                                     fingerprint: true
+                }
+            }
+        }
     }
 
     post {
