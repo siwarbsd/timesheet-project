@@ -594,6 +594,127 @@ stage('SAFETY CHECKS - OSQUERY') {
                 '''
             }
         }
+
+        stage('CONTINUOUS MONITORING') {
+            steps {
+                sh '''
+                    set -e
+
+                    mkdir -p monitoring-results
+
+                    REPORT="monitoring-results/monitoring-report.txt"
+
+                    echo "========================================" | tee "$REPORT"
+                    echo "       CONTINUOUS MONITORING REPORT" | tee -a "$REPORT"
+                    echo "========================================" | tee -a "$REPORT"
+                    echo "" | tee -a "$REPORT"
+
+                    echo "[1] PROMETHEUS" | tee -a "$REPORT"
+                    curl -fsS http://localhost:9090/-/ready | tee -a "$REPORT"
+                    echo "" | tee -a "$REPORT"
+
+                    echo "[2] KUBE-STATE-METRICS TARGET" | tee -a "$REPORT"
+
+                    TARGETS=$(curl -fsS http://localhost:9090/api/v1/targets)
+
+                    echo "$TARGETS"                         | grep -q '"job":"kube-state-metrics"' || {
+                            echo "ERROR: kube-state-metrics target introuvable" | tee -a "$REPORT"
+                            exit 1
+                        }
+
+                    echo "$TARGETS" | grep -q '"job":"kube-state-metrics"' || {
+                            echo "ERROR: kube-state-metrics target introuvable" | tee -a "$REPORT"
+                            exit 1
+                        }
+
+                    echo "$TARGETS" | grep -q '"scrapeUrl":"http://192.168.49.2:30418/metrics"' || {
+                            echo "ERROR: URL kube-state-metrics introuvable" | tee -a "$REPORT"
+                            exit 1
+                        }
+
+                    echo "$TARGETS" | grep -q '"health":"up"' || {
+                            echo "ERROR: kube-state-metrics target DOWN" | tee -a "$REPORT"
+                            exit 1
+                        }
+
+                    echo "kube-state-metrics : UP" | tee -a "$REPORT"
+                    echo "" | tee -a "$REPORT"
+
+                    echo "[3] TIMESHEET DEPLOYMENT" | tee -a "$REPORT"
+
+                    DEPLOYMENT_JSON=$(curl -fsS http://localhost:9090/api/v1/query                         --data-urlencode 'query=kube_deployment_status_replicas_available{namespace="chap4",deployment="timesheet-dep"}')
+
+                    AVAILABLE=$(echo "$DEPLOYMENT_JSON"                         | sed -n 's/.*"value":\[[^,]*,"\([^"]*\)"\].*/\1/p'                         | head -1)
+
+                    if [ -z "$AVAILABLE" ]; then
+                        echo "ERROR: impossible de récupérer les replicas Timesheet" | tee -a "$REPORT"
+                        exit 1
+                    fi
+
+                    echo "Available replicas : $AVAILABLE" | tee -a "$REPORT"
+
+                    if [ "$AVAILABLE" -lt 1 ]; then
+                        echo "ERROR: aucun replica Timesheet disponible" | tee -a "$REPORT"
+                        exit 1
+                    fi
+
+                    echo "Timesheet deployment : OK" | tee -a "$REPORT"
+                    echo "" | tee -a "$REPORT"
+
+                    echo "[4] TIMESHEET PODS" | tee -a "$REPORT"
+
+                    PODS_JSON=$(curl -fsS http://localhost:9090/api/v1/query                         --data-urlencode 'query=kube_pod_status_phase{namespace="chap4",pod=~"timesheet-dep-.*",phase="Running"}')
+
+                    RUNNING=$(echo "$PODS_JSON"                         | grep -o '"value":\[[^]]*,"1"\]'                         | wc -l)
+
+                    echo "Running Timesheet pods : $RUNNING" | tee -a "$REPORT"
+
+                    if [ "$RUNNING" -lt 1 ]; then
+                        echo "ERROR: aucun pod Timesheet Running" | tee -a "$REPORT"
+                        exit 1
+                    fi
+
+                    echo "Timesheet pods : OK" | tee -a "$REPORT"
+                    echo "" | tee -a "$REPORT"
+
+                    echo "[5] PROMETHEUS ALERT RULES" | tee -a "$REPORT"
+
+                    RULES=$(curl -fsS http://localhost:9090/api/v1/rules)
+
+                    echo "$RULES" | grep -q 'TimesheetDeploymentUnavailable' || {
+                        echo "ERROR: règle TimesheetDeploymentUnavailable absente" | tee -a "$REPORT"
+                        exit 1
+                    }
+
+                    echo "$RULES" | grep -q 'TimesheetPodNotRunning' || {
+                        echo "ERROR: règle TimesheetPodNotRunning absente" | tee -a "$REPORT"
+                        exit 1
+                    }
+
+                    echo "$RULES" | grep -q '"health":"ok"' || {
+                        echo "ERROR: règle Prometheus non saine" | tee -a "$REPORT"
+                        exit 1
+                    }
+
+                    echo "Alert rules : OK" | tee -a "$REPORT"
+                    echo "" | tee -a "$REPORT"
+
+                    echo "========================================" | tee -a "$REPORT"
+                    echo "RESULT: CONTINUOUS MONITORING SUCCESS" | tee -a "$REPORT"
+                    echo "========================================" | tee -a "$REPORT"
+
+                    cat "$REPORT"
+                '''
+            }
+
+            post {
+                always {
+                    archiveArtifacts artifacts: 'monitoring-results/**',
+                                     allowEmptyArchive: false,
+                                     fingerprint: true
+                }
+            }
+        }
     }
 
     post {

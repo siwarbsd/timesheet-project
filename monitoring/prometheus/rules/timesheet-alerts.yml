@@ -1,0 +1,23 @@
+groups:
+  - name: timesheet-kubernetes
+    rules:
+
+      - alert: TimesheetDeploymentUnavailable
+        expr: kube_deployment_status_replicas_available{namespace="chap4",deployment="timesheet-dep"} < 1
+        for: 2m
+        labels:
+          severity: critical
+          app: timesheet
+        annotations:
+          summary: "Timesheet deployment indisponible"
+          description: "Le deployment timesheet-dep n'a aucun replica disponible depuis plus de 2 minutes."
+
+      - alert: TimesheetPodNotRunning
+        expr: kube_pod_status_phase{namespace="chap4",pod=~"timesheet-dep-.*",phase!="Running"} == 1
+        for: 2m
+        labels:
+          severity: warning
+          app: timesheet
+        annotations:
+          summary: "Pod Timesheet non Running"
+          description: "Un pod Timesheet est dans un état différent de Running depuis plus de 2 minutes."
