@@ -378,7 +378,7 @@ stage('SECURITY SMOKE TESTS') {
                     echo "=== ATTENTE DU CYCLE CHAOS ==="
 
                     for i in $(seq 1 20); do
-                        if kubectl logs deployment/kube-monkey                             -n kube-monkey                             --since=2m 2>/dev/null                             | grep -q '\[DryRun Mode\].*timesheet-dep'; then
+                        if kubectl logs deployment/kube-monkey                             -n kube-monkey                             --since=2m 2>/dev/null                             | grep -q 'DryRun Mode.*timesheet-dep'; then
                             break
                         fi
                         sleep 5
