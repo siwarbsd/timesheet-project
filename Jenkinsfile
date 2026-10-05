@@ -500,7 +500,7 @@ stage('SAFETY CHECKS - OSQUERY') {
                         echo -n "$ANSIBLE_VAULT_PASSWORD" > ansible-results/.vault-password
                         chmod 600 ansible-results/.vault-password
 
-                        ansible-playbook \
+                        sudo -n /usr/bin/ansible-playbook \
                             -i ansible/inventory.ini \
                             ansible/playbook.yml \
                             --vault-password-file ansible-results/.vault-password
