@@ -8,3 +8,6 @@ server-hardening-report.txt
 zap-baseline-report.html
 zap-baseline-report.json
 zap.yaml
+
+# OpenSCAP generated reports
+openscap-results/
