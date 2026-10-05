@@ -413,6 +413,14 @@ stage('SECURITY SMOKE TESTS') {
         stage('DAST - SQLMAP SCAN') {
             steps {
                 sh '''
+                    echo "=== ATTENTE DU DEPLOIEMENT TIMESHEET APRES CHAOS MONKEY ==="
+                    kubectl rollout status deployment/timesheet-dep -n chap4 --timeout=180s
+
+                    echo "=== PODS TIMESHEET PRETS ==="
+                    kubectl get pods -n chap4 -l app=timesheet -o wide
+
+                    sleep 10
+
                     kubectl port-forward -n chap4 svc/timesheet-serv 18080:8080 &
                     PF_PID=$!
                     sleep 8
