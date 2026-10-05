@@ -617,11 +617,6 @@ stage('SAFETY CHECKS - OSQUERY') {
 
                     TARGETS=$(curl -fsS http://localhost:9090/api/v1/targets)
 
-                    echo "$TARGETS"                         | grep -q '"job":"kube-state-metrics"' || {
-                            echo "ERROR: kube-state-metrics target introuvable" | tee -a "$REPORT"
-                            exit 1
-                        }
-
                     echo "$TARGETS" | grep -q '"job":"kube-state-metrics"' || {
                             echo "ERROR: kube-state-metrics target introuvable" | tee -a "$REPORT"
                             exit 1
@@ -644,7 +639,7 @@ stage('SAFETY CHECKS - OSQUERY') {
 
                     DEPLOYMENT_JSON=$(curl -fsS http://localhost:9090/api/v1/query                         --data-urlencode 'query=kube_deployment_status_replicas_available{namespace="chap4",deployment="timesheet-dep"}')
 
-                    AVAILABLE=$(echo "$DEPLOYMENT_JSON"                         | sed -n 's/.*"value":\[[^,]*,"\([^"]*\)"\].*/\1/p'                         | head -1)
+                    AVAILABLE=$(printf '%s' "$DEPLOYMENT_JSON" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d["data"]["result"][0]["value"][1] if d["data"]["result"] else "0")')
 
                     if [ -z "$AVAILABLE" ]; then
                         echo "ERROR: impossible de récupérer les replicas Timesheet" | tee -a "$REPORT"
@@ -663,9 +658,9 @@ stage('SAFETY CHECKS - OSQUERY') {
 
                     echo "[4] TIMESHEET PODS" | tee -a "$REPORT"
 
-                    PODS_JSON=$(curl -fsS http://localhost:9090/api/v1/query                         --data-urlencode 'query=kube_pod_status_phase{namespace="chap4",pod=~"timesheet-dep-.*",phase="Running"}')
+                    PODS_JSON=$(curl -fsS http://localhost:9090/api/v1/query                         --data-urlencode 'query=count(kube_pod_status_phase{namespace="chap4",pod=~"timesheet-dep-.*",phase="Running"} == 1)')
 
-                    RUNNING=$(echo "$PODS_JSON"                         | grep -o '"value":\[[^]]*,"1"\]'                         | wc -l)
+                    RUNNING=$(printf '%s' "$PODS_JSON" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d["data"]["result"][0]["value"][1] if d["data"]["result"] else "0")')
 
                     echo "Running Timesheet pods : $RUNNING" | tee -a "$REPORT"
 
