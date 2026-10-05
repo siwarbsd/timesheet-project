@@ -512,6 +512,10 @@ stage('SAFETY CHECKS - OSQUERY') {
 
             post {
                 always {
+                    archiveArtifacts artifacts: 'ansible-results/server-hardening-report.txt',
+                                     allowEmptyArchive: false,
+                                     fingerprint: true
+
                     sh 'rm -f ansible-results/.vault-password'
                 }
             }
