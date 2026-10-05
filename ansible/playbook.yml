@@ -1,7 +1,6 @@
 ---
 - name: Server Hardening - WSL2 Docker Jenkins Minikube
   hosts: hardening
-  become: true
   gather_facts: true
 
   tasks:
