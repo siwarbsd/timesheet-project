@@ -95,7 +95,7 @@
       ansible.builtin.shell: |
         set -e
 
-        mkdir -p ansible-results
+        mkdir -p ../ansible-results
 
         {
           echo "========================================"
@@ -131,7 +131,7 @@
           echo "========================================"
           echo "RESULT: HARDENING CHECK COMPLETED"
           echo "========================================"
-        } > ansible-results/server-hardening-report.txt
+        } > ../ansible-results/server-hardening-report.txt
 
       args:
         executable: /bin/bash
@@ -139,7 +139,7 @@
 
     - name: Read hardening report
       ansible.builtin.slurp:
-        src: ansible-results/server-hardening-report.txt
+        src: ../ansible-results/server-hardening-report.txt
       register: hardening_report
       when: not ansible_check_mode
 
