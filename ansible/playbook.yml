@@ -95,7 +95,7 @@
       ansible.builtin.shell: |
         set -e
 
-        mkdir -p /tmp/ansible-hardening
+        mkdir -p ansible-results
 
         {
           echo "========================================"
@@ -131,7 +131,7 @@
           echo "========================================"
           echo "RESULT: HARDENING CHECK COMPLETED"
           echo "========================================"
-        } > /tmp/ansible-hardening/server-hardening-report.txt
+        } > ansible-results/server-hardening-report.txt
 
       args:
         executable: /bin/bash
