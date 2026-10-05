@@ -390,7 +390,7 @@ stage('SECURITY SMOKE TESTS') {
                     kubectl logs deployment/kube-monkey                         -n kube-monkey                         --since=2m                         | tee chaos-results/kube-monkey-report.txt
 
                     echo "=== VERIFICATION DRY RUN ==="
-                    grep -q '\[DryRun Mode\]' chaos-results/kube-monkey-report.txt
+                    grep -q 'DryRun Mode' chaos-results/kube-monkey-report.txt
                     grep -q 'timesheet-dep' chaos-results/kube-monkey-report.txt
 
                     echo "=== PODS APRES TEST ==="
