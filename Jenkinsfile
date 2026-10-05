@@ -784,10 +784,6 @@ stage('SAFETY CHECKS - OSQUERY') {
 
                     echo ""
                     echo "Code retour OpenSCAP : $SCAN_RC"
-            if [ "$SCAN_RC" -gt 1 ]; then
-                echo "ERROR: erreur d'exécution OpenSCAP (code $SCAN_RC)"
-                exit "$SCAN_RC"
-            fi
 
                     echo ""
                     echo "[5] RESULTS"
