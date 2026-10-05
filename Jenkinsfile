@@ -486,6 +486,37 @@ stage('SAFETY CHECKS - OSQUERY') {
             }
         }
 
+        stage('SERVER HARDENING - ANSIBLE') {
+            steps {
+                withCredentials([string(
+                    credentialsId: 'ansible-vault-password',
+                    variable: 'ANSIBLE_VAULT_PASSWORD'
+                )]) {
+                    sh '''
+                        set +x
+
+                        mkdir -p ansible-results
+
+                        echo -n "$ANSIBLE_VAULT_PASSWORD" > ansible-results/.vault-password
+                        chmod 600 ansible-results/.vault-password
+
+                        ansible-playbook \
+                            -i ansible/inventory.ini \
+                            ansible/playbook.yml \
+                            --vault-password-file ansible-results/.vault-password
+
+                        rm -f ansible-results/.vault-password
+                    '''
+                }
+            }
+
+            post {
+                always {
+                    sh 'rm -f ansible-results/.vault-password'
+                }
+            }
+        }
+
         stage('PROMETHEUS') {
             steps {
                 sh '''

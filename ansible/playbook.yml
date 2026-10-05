@@ -1,0 +1,150 @@
+---
+- name: Server Hardening - WSL2 Docker Jenkins Minikube
+  hosts: hardening
+  become: true
+  gather_facts: true
+
+  tasks:
+
+    - name: Update APT cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Ensure security packages are installed
+      ansible.builtin.apt:
+        name:
+          - unattended-upgrades
+          - fail2ban
+        state: present
+
+    - name: Ensure unattended-upgrades is enabled
+      ansible.builtin.service:
+        name: unattended-upgrades
+        enabled: true
+        state: started
+
+    - name: Ensure Fail2Ban is enabled
+      ansible.builtin.service:
+        name: fail2ban
+        enabled: true
+        state: started
+
+    # IMPORTANT:
+    # ip_forward stays enabled because Docker and Minikube require it.
+    - name: Apply safe network hardening parameters
+      ansible.posix.sysctl:
+        name: "{{ item.name }}"
+        value: "{{ item.value }}"
+        state: present
+        reload: true
+      loop:
+        - { name: "net.ipv4.conf.all.accept_redirects", value: "0" }
+        - { name: "net.ipv4.conf.default.accept_redirects", value: "0" }
+        - { name: "net.ipv4.conf.all.send_redirects", value: "0" }
+        - { name: "net.ipv4.conf.default.send_redirects", value: "0" }
+        - { name: "net.ipv4.conf.all.accept_source_route", value: "0" }
+        - { name: "net.ipv4.conf.default.accept_source_route", value: "0" }
+
+    - name: Protect /etc/passwd
+      ansible.builtin.file:
+        path: /etc/passwd
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Protect /etc/group
+      ansible.builtin.file:
+        path: /etc/group
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Protect /etc/shadow
+      ansible.builtin.file:
+        path: /etc/shadow
+        owner: root
+        group: shadow
+        mode: "0640"
+
+    - name: Protect /etc/gshadow
+      ansible.builtin.file:
+        path: /etc/gshadow
+        owner: root
+        group: shadow
+        mode: "0640"
+
+    - name: Check Docker service
+      ansible.builtin.service_facts:
+
+    - name: Verify Docker remains available
+      ansible.builtin.assert:
+        that:
+          - "'docker.service' in ansible_facts.services"
+          - ansible_facts.services['docker.service'].state == 'running'
+        fail_msg: "Docker n'est pas actif. Aucun changement réseau agressif n'a été effectué."
+
+    - name: Validate Ansible Vault configuration
+      ansible.builtin.assert:
+        that:
+          - vault_hardening_managed | bool
+          - vault_environment | length > 0
+        success_msg: "Ansible Vault chargé : environnement {{ vault_environment }}"
+        fail_msg: "Configuration Ansible Vault invalide"
+
+    - name: Generate hardening report
+      ansible.builtin.shell: |
+        set -e
+
+        mkdir -p /tmp/ansible-hardening
+
+        {
+          echo "========================================"
+          echo "      ANSIBLE SERVER HARDENING"
+          echo "========================================"
+          echo
+          echo "[SYSTEM]"
+          hostname
+          uname -a
+          echo
+          echo "[NETWORK HARDENING]"
+          sysctl net.ipv4.ip_forward
+          sysctl net.ipv4.conf.all.accept_redirects
+          sysctl net.ipv4.conf.all.send_redirects
+          sysctl net.ipv4.conf.all.accept_source_route
+          sysctl net.ipv4.conf.all.rp_filter
+          echo
+          echo "[FAIL2BAN]"
+          fail2ban-client status
+          echo
+          echo "[DOCKER]"
+          systemctl is-active docker
+          echo
+          echo "[JENKINS]"
+          systemctl is-active jenkins
+          echo
+          echo "[APPARMOR]"
+          aa-status 2>&1 || true
+          echo
+          echo "[AUDITD]"
+          systemctl is-active auditd 2>&1 || true
+          echo
+          echo "========================================"
+          echo "RESULT: HARDENING CHECK COMPLETED"
+          echo "========================================"
+        } > /tmp/ansible-hardening/server-hardening-report.txt
+
+      args:
+        executable: /bin/bash
+      when: not ansible_check_mode
+
+    - name: Read hardening report
+      ansible.builtin.slurp:
+        src: /tmp/ansible-hardening/server-hardening-report.txt
+      register: hardening_report
+      when: not ansible_check_mode
+
+    - name: Display hardening report
+      ansible.builtin.debug:
+        msg: "{{ hardening_report.content | b64decode }}"
+      when: not ansible_check_mode

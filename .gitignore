@@ -1,1 +1,10 @@
 target/
+
+# Local security reports / temporary files
+nmap-security-report.txt
+osquery-results/
+pom.xml.backup
+server-hardening-report.txt
+zap-baseline-report.html
+zap-baseline-report.json
+zap.yaml
