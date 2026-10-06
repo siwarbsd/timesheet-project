@@ -39,7 +39,7 @@ pipeline {
         )]) {
             sh '''
                 NVD_OPTION="-Dnvd.api.key"
-		mvn org.owasp:dependency-check-maven:check "$NVD_OPTION=$NVD_API_KEY"		
+		mvn org.owasp:dependency-check-maven:check "$NVD_OPTION=$NVD_API_KEY" -Dformats=HTML,JSON
             '''
         }
     }
@@ -57,6 +57,306 @@ pipeline {
         ])
     }
 }
+        stage('THREAT INTELLIGENCE - CISA KEV + EPSS') {
+            steps {
+                sh '''
+                    set -e
+
+                    mkdir -p threat-intel-results
+
+                    OWASP_JSON="target/dependency-check-report.json"
+                    CISA_KEV="threat-intel-results/cisa-kev.json"
+                    EPSS_JSON="threat-intel-results/epss.json"
+                    REPORT="threat-intel-results/threat-intel-report.json"
+                    SUMMARY="threat-intel-results/threat-intel-summary.txt"
+
+                    echo "========================================"
+                    echo "     THREAT INTELLIGENCE - CISA KEV + EPSS"
+                    echo "========================================"
+
+                    echo ""
+                    echo "[1] OWASP JSON"
+
+                    test -s "$OWASP_JSON" || {
+                        echo "ERROR: rapport OWASP JSON introuvable : $OWASP_JSON"
+                        exit 1
+                    }
+
+                    echo "OWASP Dependency-Check JSON : OK"
+
+                    echo ""
+                    echo "[2] CISA KEV"
+
+                    curl -fsSL \
+                        "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json" \
+                        -o "$CISA_KEV"
+
+                    test -s "$CISA_KEV" || {
+                        echo "ERROR: catalogue CISA KEV non récupéré"
+                        exit 1
+                    }
+
+                    echo "CISA KEV : OK"
+
+                    echo ""
+                    echo "[3] EXTRACTION DES CVE"
+
+                    python3 - "$OWASP_JSON" "$CISA_KEV" "threat-intel-results/cves.txt" <<'PYCVES'
+import json
+import re
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as f:
+    owasp = json.load(f)
+
+with open(sys.argv[2], encoding="utf-8") as f:
+    cisa = json.load(f)
+
+cves = set()
+
+for dependency in owasp.get("dependencies", []):
+    for vulnerability in dependency.get("vulnerabilities", []) or []:
+        cve = vulnerability.get("name", "")
+        if re.fullmatch(r"CVE-\d{4}-\d{4,}", cve):
+            cves.add(cve)
+
+cisa_cves = {
+    item.get("cveID")
+    for item in cisa.get("vulnerabilities", [])
+    if item.get("cveID")
+}
+
+with open(sys.argv[3], "w", encoding="utf-8") as f:
+    for cve in sorted(cves):
+        f.write(cve + "\n")
+
+print(f"CVE OWASP détectées : {len(cves)}")
+print(f"CVE présentes dans CISA KEV : {len(cves & cisa_cves)}")
+PYCVES
+
+                    CVE_COUNT=$(wc -l < threat-intel-results/cves.txt)
+
+                    echo "CVE détectées : $CVE_COUNT"
+
+                    if [ "$CVE_COUNT" -eq 0 ]; then
+                        echo '{"status":"OK","vulnerabilities":[]}' > "$REPORT"
+                        echo "Aucune CVE à enrichir." > "$SUMMARY"
+                        echo "Threat Intelligence : SCAN COMPLETED"
+                        exit 0
+                    fi
+
+                    echo ""
+                    echo "[4] EPSS"
+
+                    : > "$EPSS_JSON"
+
+                    split -l 100 \
+                        threat-intel-results/cves.txt \
+                        threat-intel-results/cve-batch-
+
+                    for batch in threat-intel-results/cve-batch-*; do
+                        CVE_LIST=$(paste -sd, "$batch")
+
+                        curl -fsSLG \
+                            --data-urlencode "cve=$CVE_LIST" \
+                            "https://api.first.org/data/v1/epss" \
+                            > "${batch}.json"
+
+                        cat "${batch}.json" >> "$EPSS_JSON"
+                    done
+
+                    rm -f threat-intel-results/cve-batch-* \
+                          threat-intel-results/cves.txt
+
+                    echo "EPSS : OK"
+
+                    echo ""
+                    echo "[5] CORRELATION CISA KEV + EPSS"
+
+                    python3 - "$OWASP_JSON" "$CISA_KEV" "$EPSS_JSON" "$REPORT" "$SUMMARY" <<'PYCORRELATION'
+import json
+import sys
+
+owasp_file = sys.argv[1]
+cisa_file = sys.argv[2]
+epss_file = sys.argv[3]
+report_file = sys.argv[4]
+summary_file = sys.argv[5]
+
+with open(owasp_file, encoding="utf-8") as f:
+    owasp = json.load(f)
+
+with open(cisa_file, encoding="utf-8") as f:
+    cisa = json.load(f)
+
+cisa_map = {
+    item.get("cveID"): item
+    for item in cisa.get("vulnerabilities", [])
+    if item.get("cveID")
+}
+
+epss_map = {}
+
+with open(epss_file, encoding="utf-8") as f:
+    for line in f:
+        if not line.strip():
+            continue
+        try:
+            data = json.loads(line)
+            for item in data.get("data", []):
+                epss_map[item.get("cve")] = item
+        except json.JSONDecodeError:
+            pass
+
+findings = {}
+
+for dependency in owasp.get("dependencies", []):
+    for vulnerability in dependency.get("vulnerabilities", []) or []:
+        cve = vulnerability.get("name")
+
+        if not cve:
+            continue
+
+        cvss = vulnerability.get("cvssv3") or {}
+
+        finding = findings.setdefault(cve, {
+            "cve": cve,
+            "severity": vulnerability.get("severity"),
+            "cvss": cvss.get("baseScore"),
+            "description": vulnerability.get("description"),
+            "kev": False,
+            "kev_date_added": None,
+            "kev_due_date": None,
+            "kev_vendor": None,
+            "kev_product": None,
+            "epss": None,
+            "epss_percentile": None
+        })
+
+        if vulnerability.get("severity"):
+            finding["severity"] = vulnerability.get("severity")
+
+        if cvss.get("baseScore") is not None:
+            finding["cvss"] = cvss.get("baseScore")
+
+for cve, finding in findings.items():
+    kev = cisa_map.get(cve)
+
+    if kev:
+        finding["kev"] = True
+        finding["kev_date_added"] = kev.get("dateAdded")
+        finding["kev_due_date"] = kev.get("dueDate")
+        finding["kev_vendor"] = kev.get("vendorProject")
+        finding["kev_product"] = kev.get("product")
+
+    epss = epss_map.get(cve)
+
+    if epss:
+        try:
+            finding["epss"] = float(epss.get("epss"))
+        except (TypeError, ValueError):
+            pass
+
+        try:
+            finding["epss_percentile"] = float(epss.get("percentile"))
+        except (TypeError, ValueError):
+            pass
+
+def get_priority(item):
+    if item["kev"]:
+        return "CRITICAL"
+
+    if item["epss"] is not None and item["epss"] >= 0.70:
+        return "HIGH"
+
+    if item["epss"] is not None and item["epss"] >= 0.30:
+        return "MEDIUM"
+
+    return "LOW"
+
+for item in findings.values():
+    item["priority"] = get_priority(item)
+
+items = sorted(
+    findings.values(),
+    key=lambda x: (
+        {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}[x["priority"]],
+        -(x["epss"] or 0)
+    )
+)
+
+summary = {
+    "total_cves": len(items),
+    "cisa_kev": sum(1 for x in items if x["kev"]),
+    "epss_high": sum(
+        1 for x in items
+        if x["epss"] is not None and x["epss"] >= 0.70
+    ),
+    "critical": sum(1 for x in items if x["priority"] == "CRITICAL"),
+    "high": sum(1 for x in items if x["priority"] == "HIGH"),
+    "medium": sum(1 for x in items if x["priority"] == "MEDIUM"),
+    "low": sum(1 for x in items if x["priority"] == "LOW")
+}
+
+result = {
+    "status": "OK",
+    "sources": {
+        "owasp_dependency_check": True,
+        "cisa_kev": True,
+        "epss": True
+    },
+    "summary": summary,
+    "vulnerabilities": items
+}
+
+with open(report_file, "w", encoding="utf-8") as f:
+    json.dump(result, f, indent=2)
+
+with open(summary_file, "w", encoding="utf-8") as f:
+    f.write("========================================\n")
+    f.write("     THREAT INTELLIGENCE REPORT\n")
+    f.write("========================================\n\n")
+    f.write(f"Total CVE       : {summary['total_cves']}\n")
+    f.write(f"CISA KEV        : {summary['cisa_kev']}\n")
+    f.write(f"EPSS >= 0.70    : {summary['epss_high']}\n")
+    f.write(f"CRITICAL        : {summary['critical']}\n")
+    f.write(f"HIGH            : {summary['high']}\n")
+    f.write(f"MEDIUM          : {summary['medium']}\n")
+    f.write(f"LOW             : {summary['low']}\n\n")
+
+    f.write("TOP PRIORITY VULNERABILITIES\n")
+    f.write("-----------------------------\n")
+
+    for item in items[:20]:
+        f.write(
+            f"{item['cve']} | "
+            f"priority={item['priority']} | "
+            f"severity={item['severity']} | "
+            f"cvss={item['cvss']} | "
+            f"epss={item['epss']} | "
+            f"KEV={item['kev']}\n"
+        )
+PYCORRELATION
+
+                    cat "$SUMMARY"
+
+                    echo ""
+                    echo "Rapport JSON : $REPORT"
+                    echo "Résumé : $SUMMARY"
+                    echo ""
+                    echo "Threat Intelligence : SCAN COMPLETED"
+                '''
+            }
+        }
+
+        post {
+            always {
+                archiveArtifacts artifacts: 'threat-intel-results/**',
+                                 allowEmptyArchive: false,
+                                 fingerprint: true
+            }
+        }
+
         stage('SONARQUBE') {
             steps {
                 withSonarQubeEnv('SonarQube') {

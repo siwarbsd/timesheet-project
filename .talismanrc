@@ -1,6 +1,6 @@
 fileignoreconfig:
 - filename: Jenkinsfile
-  checksum: 721701a03230fc07a7edd3482325b959b287701fb6d3fce7a83d0ef69f47e8e4
+  checksum: 082e53be8d81f7bcb50436029f8e32501fd6dc049d0e343ae1eed2099d9a2ee0
 - filename: tools/openscap/ssg/ssg-ubuntu2404-ds.xml
   checksum: 5c17e341656854d931a250e435c837e50eca626a4b7f104fac4e3306449800bf
 version: "1.0"
