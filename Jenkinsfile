@@ -117,7 +117,7 @@ cves = set()
 for dependency in owasp.get("dependencies", []):
     for vulnerability in dependency.get("vulnerabilities", []) or []:
         cve = vulnerability.get("name", "")
-        if re.fullmatch(r"CVE-\d{4}-\d{4,}", cve):
+        if re.fullmatch(r"CVE-[0-9]{4}-[0-9]{4,}", cve):
             cves.add(cve)
 
 cisa_cves = {
