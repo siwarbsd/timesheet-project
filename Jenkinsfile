@@ -345,6 +345,65 @@ PYCORRELATION
                     echo "Résumé : $SUMMARY"
                     echo ""
                     echo "Threat Intelligence : SCAN COMPLETED"
+
+                    echo ""
+                    echo "[6] PUSHGATEWAY - PROMETHEUS"
+
+                    python3 - "$REPORT" > threat-intel-results/threat-intel.prom <<'PYMETRICS'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as f:
+    report = json.load(f)
+
+summary = report.get("summary", {})
+vulnerabilities = report.get("vulnerabilities", [])
+
+print("# TYPE timesheet_threat_cves_total gauge")
+print(f"timesheet_threat_cves_total {summary.get('total_cves', 0)}")
+
+print("# TYPE timesheet_threat_cisa_kev gauge")
+print(f"timesheet_threat_cisa_kev {summary.get('cisa_kev', 0)}")
+
+print("# TYPE timesheet_threat_epss_high gauge")
+print(f"timesheet_threat_epss_high {summary.get('epss_high', 0)}")
+
+print("# TYPE timesheet_threat_critical gauge")
+print(f"timesheet_threat_critical {summary.get('critical', 0)}")
+
+print("# TYPE timesheet_threat_high gauge")
+print(f"timesheet_threat_high {summary.get('high', 0)}")
+
+print("# TYPE timesheet_threat_medium gauge")
+print(f"timesheet_threat_medium {summary.get('medium', 0)}")
+
+print("# TYPE timesheet_threat_low gauge")
+print(f"timesheet_threat_low {summary.get('low', 0)}")
+
+print("# TYPE timesheet_threat_finding gauge")
+
+for item in vulnerabilities[:10]:
+    cve = item.get("cve")
+    epss = item.get("epss")
+    priority = item.get("priority", "LOW")
+    severity = item.get("severity") or "UNKNOWN"
+    kev = str(item.get("kev", False)).lower()
+
+    if not cve or epss is None:
+        continue
+
+    print(
+        f'timesheet_threat_finding{{cve="{cve}",priority="{priority}",severity="{severity}",kev="{kev}"}} {float(epss)}'
+    )
+PYMETRICS
+
+                    cat threat-intel-results/threat-intel.prom
+
+                    curl -fsS \
+                        --data-binary @threat-intel-results/threat-intel.prom \
+                        http://192.168.203.161:9091/metrics/job/timesheet-threat-intelligence
+
+                    echo "Threat Intelligence : METRICS PUSHED TO PROMETHEUS"
                 '''
               }
 
