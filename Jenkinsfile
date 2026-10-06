@@ -150,11 +150,13 @@ PYCVES
 
                     : > "$EPSS_JSON"
 
+                    rm -f threat-intel-results/cve-batch-*
+
                     split -l 100 \
                         threat-intel-results/cves.txt \
                         threat-intel-results/cve-batch-
 
-                    for batch in threat-intel-results/cve-batch-*; do
+                    for batch in threat-intel-results/cve-batch-??; do
                         CVE_LIST=$(paste -sd, "$batch")
 
                         curl -fsSLG \
