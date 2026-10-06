@@ -346,16 +346,16 @@ PYCORRELATION
                     echo ""
                     echo "Threat Intelligence : SCAN COMPLETED"
                 '''
-            }
-        }
+              }
 
-        post {
-            always {
-                archiveArtifacts artifacts: 'threat-intel-results/**',
-                                 allowEmptyArchive: false,
-                                 fingerprint: true
-            }
-        }
+              post {
+                  always {
+                      archiveArtifacts artifacts: 'threat-intel-results/**',
+                                       allowEmptyArchive: false,
+                                       fingerprint: true
+                  }
+              }
+          }
 
         stage('SONARQUBE') {
             steps {
