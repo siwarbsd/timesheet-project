@@ -655,15 +655,27 @@ stage('SECURITY SMOKE TESTS') {
 
             echo "Waiting for application on port 18080..."
 
+            APP_READY=false
+
             for i in $(seq 1 60); do
+
+                if ! kill -0 "$PF_PID" 2>/dev/null; then
+                    echo "ERROR: port-forward process stopped unexpectedly."
+                    cat /tmp/timesheet-port-forward.log
+                    exit 1
+                fi
+
                 if curl -s -m 3 http://127.0.0.1:18080 >/dev/null 2>&1; then
-                    echo "Application is reachable."
+                    echo "Application is reachable on port 18080."
+                    APP_READY=true
                     break
                 fi
+
+                echo "Attempt $i/60: application not ready yet..."
                 sleep 2
             done
 
-            if ! curl -s -m 3 http://127.0.0.1:18080 >/dev/null 2>&1; then
+            if [ "$APP_READY" != "true" ]; then
                 echo "ERROR: Application is not reachable on port 18080."
                 cat /tmp/timesheet-port-forward.log
                 exit 1
