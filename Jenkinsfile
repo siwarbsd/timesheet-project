@@ -87,7 +87,7 @@ pipeline {
                     echo ""
                     echo "[2] CISA KEV"
 
-                    curl -fsSL \
+                    curl -4 --retry 3 --retry-delay 2 -fsSL \
                         "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json" \
                         -o "$CISA_KEV"
 
@@ -159,7 +159,7 @@ PYCVES
                     for batch in threat-intel-results/cve-batch-??; do
                         CVE_LIST=$(paste -sd, "$batch")
 
-                        curl -fsSLG \
+                        curl -4 --retry 3 --retry-delay 2 -fsSLG \
                             --data-urlencode "cve=$CVE_LIST" \
                             "https://api.first.org/data/v1/epss" \
                             > "${batch}.json"
