@@ -490,7 +490,7 @@ EOF
 
         stage('DOCKER BUILD') {
             steps {
-                sh 'docker build -t siwarbessoud/timesheet-devops:1.0.11 .'
+                sh 'docker build -t siwarbessoud/timesheet-devops:1.0.12 .'
             }
         }
 
@@ -503,7 +503,7 @@ EOF
                 )]) {
                     sh '''
                         echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker push siwarbessoud/timesheet-devops:1.0.11
+                        docker push siwarbessoud/timesheet-devops:1.0.12
                         docker logout
                     '''
                 }
