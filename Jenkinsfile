@@ -161,9 +161,37 @@ PYCVES
                             --data-urlencode "cve=$CVE_LIST" \
                             "https://api.first.org/data/v1/epss" \
                             > "${batch}.json"
-
-                        cat "${batch}.json" >> "$EPSS_JSON"
                     done
+
+                    python3 - "$EPSS_JSON" <<'PYTHON'
+import glob
+import json
+import sys
+
+output = {
+    "status": "OK",
+    "status-code": 200,
+    "version": "1.0",
+    "access": "public",
+    "total": 0,
+    "offset": 0,
+    "limit": 100,
+    "data": []
+}
+
+for filename in sorted(glob.glob("threat-intel-results/cve-batch-*.json")):
+    with open(filename, encoding="utf-8") as f:
+        data = json.load(f)
+
+    output["data"].extend(data.get("data", []))
+
+output["total"] = len(output["data"])
+
+with open(sys.argv[1], "w", encoding="utf-8") as f:
+    json.dump(output, f)
+
+print(f"EPSS entries merged : {output['total']}")
+PYTHON
 
                     rm -f threat-intel-results/cve-batch-* \
                           threat-intel-results/cves.txt
