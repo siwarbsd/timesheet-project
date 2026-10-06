@@ -1218,6 +1218,14 @@ EOF_COUNTS
     }
 
     post {
+        always {
+            sh '''
+                REPORTS_DIR="$WORKSPACE" \
+                PUSHGATEWAY=http://192.168.203.161:9091 \
+                bash export_security_metrics.sh || true
+            '''
+        }
+
         success {
             echo 'Pipeline CI/CD terminée avec succès.'
         }

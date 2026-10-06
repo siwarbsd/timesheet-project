@@ -3,4 +3,6 @@ fileignoreconfig:
   checksum: 082e53be8d81f7bcb50436029f8e32501fd6dc049d0e343ae1eed2099d9a2ee0
 - filename: tools/openscap/ssg/ssg-ubuntu2404-ds.xml
   checksum: 5c17e341656854d931a250e435c837e50eca626a4b7f104fac4e3306449800bf
+- filename: export_security_metrics.sh
+  checksum: cbbfa1468acd4d67a6e01f3d7a257e6268f3abf17dd085dc8bbcf756a7578148
 version: "1.0"
