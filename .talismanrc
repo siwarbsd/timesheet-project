@@ -5,4 +5,6 @@ fileignoreconfig:
   checksum: 5c17e341656854d931a250e435c837e50eca626a4b7f104fac4e3306449800bf
 - filename: export_security_metrics.sh
   checksum: cbbfa1468acd4d67a6e01f3d7a257e6268f3abf17dd085dc8bbcf756a7578148
-version: "1.0"
+- filename: create-grafana-dashboard.sh
+  checksum: 84f54e31fb1e934d8b88bbc7cb83a810da7c527bdd49ce0b57ea0794c01ac3af
+version: '1.0'

@@ -1,0 +1,1478 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "timesheet-devsecops-security",
+    "title": "\ud83d\udee1\ufe0f Timesheet DevSecOps \u2014 Security Command Center",
+    "description": "Centralized DevSecOps security monitoring for the Timesheet project. Threat Intelligence, CVEs, CISA KEV, EPSS, OpenSCAP, Fail2ban, system hardening, Chaos Engineering and Security Pipeline.",
+    "tags": [
+      "timesheet",
+      "devsecops",
+      "security",
+      "threat-intelligence",
+      "openscap",
+      "fail2ban",
+      "chaos-engineering"
+    ],
+    "timezone": "browser",
+    "schemaVersion": 39,
+    "version": 1,
+    "refresh": "30s",
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "templating": {
+      "list": []
+    },
+    "annotations": {
+      "list": []
+    },
+    "panels": [
+      {
+        "id": 1,
+        "type": "stat",
+        "title": "\ud83d\udd25 TOTAL CVEs",
+        "description": "Timesheet DevSecOps security metric",
+        "gridPos": {
+          "x": 0,
+          "y": 0,
+          "w": 4,
+          "h": 4
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "dfz11ypndzrpca"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "timesheet_threat_cves_total",
+            "instant": true,
+            "legendFormat": "__auto"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "orange",
+                  "value": 10
+                },
+                {
+                  "color": "red",
+                  "value": 50
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": ""
+          },
+          "orientation": "auto",
+          "textMode": "auto",
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "center"
+        }
+      },
+      {
+        "id": 2,
+        "type": "stat",
+        "title": "\ud83d\udea8 CRITICAL",
+        "description": "Timesheet DevSecOps security metric",
+        "gridPos": {
+          "x": 4,
+          "y": 0,
+          "w": 4,
+          "h": 4
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "dfz11ypndzrpca"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "timesheet_threat_critical",
+            "instant": true,
+            "legendFormat": "__auto"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "orange",
+                  "value": 1
+                },
+                {
+                  "color": "red",
+                  "value": 5
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": ""
+          },
+          "orientation": "auto",
+          "textMode": "auto",
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "center"
+        }
+      },
+      {
+        "id": 3,
+        "type": "stat",
+        "title": "\ud83d\udfe0 HIGH",
+        "description": "Timesheet DevSecOps security metric",
+        "gridPos": {
+          "x": 8,
+          "y": 0,
+          "w": 4,
+          "h": 4
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "dfz11ypndzrpca"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "timesheet_threat_high",
+            "instant": true,
+            "legendFormat": "__auto"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "orange",
+                  "value": 5
+                },
+                {
+                  "color": "red",
+                  "value": 20
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": ""
+          },
+          "orientation": "auto",
+          "textMode": "auto",
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "center"
+        }
+      },
+      {
+        "id": 4,
+        "type": "stat",
+        "title": "\ud83d\udfe1 MEDIUM",
+        "description": "Timesheet DevSecOps security metric",
+        "gridPos": {
+          "x": 12,
+          "y": 0,
+          "w": 4,
+          "h": 4
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "dfz11ypndzrpca"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "timesheet_threat_medium",
+            "instant": true,
+            "legendFormat": "__auto"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 1
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": ""
+          },
+          "orientation": "auto",
+          "textMode": "auto",
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "center"
+        }
+      },
+      {
+        "id": 5,
+        "type": "stat",
+        "title": "\ud83d\udd35 LOW",
+        "description": "Timesheet DevSecOps security metric",
+        "gridPos": {
+          "x": 16,
+          "y": 0,
+          "w": 4,
+          "h": 4
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "dfz11ypndzrpca"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "timesheet_threat_low",
+            "instant": true,
+            "legendFormat": "__auto"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 1
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": ""
+          },
+          "orientation": "auto",
+          "textMode": "auto",
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "center"
+        }
+      },
+      {
+        "id": 6,
+        "type": "stat",
+        "title": "\u2620\ufe0f CISA KEV",
+        "description": "Timesheet DevSecOps security metric",
+        "gridPos": {
+          "x": 20,
+          "y": 0,
+          "w": 4,
+          "h": 4
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "dfz11ypndzrpca"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "timesheet_threat_cisa_kev",
+            "instant": true,
+            "legendFormat": "__auto"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "orange",
+                  "value": 1
+                },
+                {
+                  "color": "red",
+                  "value": 5
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": ""
+          },
+          "orientation": "auto",
+          "textMode": "auto",
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "center"
+        }
+      },
+      {
+        "id": 10,
+        "type": "barchart",
+        "title": "\ud83d\udd25 THREAT INTELLIGENCE \u2014 CVE SEVERITY",
+        "description": "Security findings by severity",
+        "gridPos": {
+          "x": 0,
+          "y": 4,
+          "w": 12,
+          "h": 8
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "dfz11ypndzrpca"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "timesheet_threat_critical",
+            "instant": true,
+            "legendFormat": "Critical"
+          },
+          {
+            "refId": "B",
+            "expr": "timesheet_threat_high",
+            "instant": true,
+            "legendFormat": "High"
+          },
+          {
+            "refId": "C",
+            "expr": "timesheet_threat_medium",
+            "instant": true,
+            "legendFormat": "Medium"
+          },
+          {
+            "refId": "D",
+            "expr": "timesheet_threat_low",
+            "instant": true,
+            "legendFormat": "Low"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0
+          },
+          "overrides": []
+        },
+        "options": {
+          "orientation": "horizontal",
+          "xTickLabelRotation": 0,
+          "xTickLabelMaxLength": 0,
+          "showValue": "always",
+          "stacking": "none",
+          "groupWidth": 0.7
+        }
+      },
+      {
+        "id": 11,
+        "type": "stat",
+        "title": "\ud83c\udfaf EPSS HIGH",
+        "description": "Timesheet DevSecOps security metric",
+        "gridPos": {
+          "x": 12,
+          "y": 4,
+          "w": 6,
+          "h": 4
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "dfz11ypndzrpca"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "timesheet_threat_epss_high",
+            "instant": true,
+            "legendFormat": "__auto"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "orange",
+                  "value": 1
+                },
+                {
+                  "color": "red",
+                  "value": 5
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": ""
+          },
+          "orientation": "auto",
+          "textMode": "auto",
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "center"
+        }
+      },
+      {
+        "id": 12,
+        "type": "stat",
+        "title": "\u26a0\ufe0f THREAT FINDINGS",
+        "description": "Timesheet DevSecOps security metric",
+        "gridPos": {
+          "x": 18,
+          "y": 4,
+          "w": 6,
+          "h": 4
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "dfz11ypndzrpca"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "timesheet_threat_finding",
+            "instant": true,
+            "legendFormat": "__auto"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 1
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": ""
+          },
+          "orientation": "auto",
+          "textMode": "auto",
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "center"
+        }
+      },
+      {
+        "id": 13,
+        "type": "timeseries",
+        "title": "\ud83d\udcc8 THREAT INTELLIGENCE TREND",
+        "description": "Timesheet security monitoring over time",
+        "gridPos": {
+          "x": 12,
+          "y": 8,
+          "w": 12,
+          "h": 8
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "dfz11ypndzrpca"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "timesheet_threat_cves_total",
+            "legendFormat": "Total CVEs"
+          },
+          {
+            "refId": "B",
+            "expr": "timesheet_threat_critical",
+            "legendFormat": "Critical"
+          },
+          {
+            "refId": "C",
+            "expr": "timesheet_threat_high",
+            "legendFormat": "High"
+          },
+          {
+            "refId": "D",
+            "expr": "timesheet_threat_cisa_kev",
+            "legendFormat": "CISA KEV"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "showPoints": "auto"
+          },
+          "overrides": []
+        },
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "bottom"
+          },
+          "tooltip": {
+            "mode": "multi",
+            "sort": "desc"
+          }
+        }
+      },
+      {
+        "id": 20,
+        "type": "gauge",
+        "title": "\ud83d\udee1\ufe0f OPENSCAP COMPLIANCE",
+        "description": "OpenSCAP compliance",
+        "gridPos": {
+          "x": 0,
+          "y": 12,
+          "w": 8,
+          "h": 8
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "dfz11ypndzrpca"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "timesheet_openscap_compliance_percent",
+            "instant": true,
+            "legendFormat": "Compliance"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "decimals": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "orange",
+                  "value": 70
+                },
+                {
+                  "color": "yellow",
+                  "value": 85
+                },
+                {
+                  "color": "green",
+                  "value": 95
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": ""
+          },
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true,
+          "orientation": "auto"
+        }
+      },
+      {
+        "id": 21,
+        "type": "barchart",
+        "title": "\ud83d\udccb OPENSCAP SECURITY RESULTS",
+        "description": "Security findings by severity",
+        "gridPos": {
+          "x": 8,
+          "y": 12,
+          "w": 16,
+          "h": 8
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "dfz11ypndzrpca"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "timesheet_openscap_pass",
+            "instant": true,
+            "legendFormat": "PASS"
+          },
+          {
+            "refId": "B",
+            "expr": "timesheet_openscap_fail",
+            "instant": true,
+            "legendFormat": "FAIL"
+          },
+          {
+            "refId": "C",
+            "expr": "timesheet_openscap_not_applicable",
+            "instant": true,
+            "legendFormat": "N/A"
+          },
+          {
+            "refId": "D",
+            "expr": "timesheet_openscap_not_selected",
+            "instant": true,
+            "legendFormat": "NOT SELECTED"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0
+          },
+          "overrides": []
+        },
+        "options": {
+          "orientation": "horizontal",
+          "xTickLabelRotation": 0,
+          "xTickLabelMaxLength": 0,
+          "showValue": "always",
+          "stacking": "none",
+          "groupWidth": 0.7
+        }
+      },
+      {
+        "id": 30,
+        "type": "stat",
+        "title": "\ud83d\udeab CURRENTLY BANNED",
+        "description": "Timesheet DevSecOps security metric",
+        "gridPos": {
+          "x": 0,
+          "y": 20,
+          "w": 6,
+          "h": 4
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "dfz11ypndzrpca"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "timesheet_fail2ban_currently_banned",
+            "instant": true,
+            "legendFormat": "__auto"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 1
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": ""
+          },
+          "orientation": "auto",
+          "textMode": "auto",
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "center"
+        }
+      },
+      {
+        "id": 31,
+        "type": "stat",
+        "title": "\ud83d\udd28 TOTAL BANNED",
+        "description": "Timesheet DevSecOps security metric",
+        "gridPos": {
+          "x": 6,
+          "y": 20,
+          "w": 6,
+          "h": 4
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "dfz11ypndzrpca"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "timesheet_fail2ban_total_banned",
+            "instant": true,
+            "legendFormat": "__auto"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 1
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": ""
+          },
+          "orientation": "auto",
+          "textMode": "auto",
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "center"
+        }
+      },
+      {
+        "id": 32,
+        "type": "stat",
+        "title": "\ud83d\udca5 FAILED ATTEMPTS",
+        "description": "Timesheet DevSecOps security metric",
+        "gridPos": {
+          "x": 12,
+          "y": 20,
+          "w": 6,
+          "h": 4
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "dfz11ypndzrpca"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "timesheet_fail2ban_total_failed",
+            "instant": true,
+            "legendFormat": "__auto"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 1
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": ""
+          },
+          "orientation": "auto",
+          "textMode": "auto",
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "center"
+        }
+      },
+      {
+        "id": 33,
+        "type": "stat",
+        "title": "\ud83d\udfe2 FAIL2BAN SERVICE",
+        "description": "Security control health",
+        "gridPos": {
+          "x": 18,
+          "y": 20,
+          "w": 6,
+          "h": 4
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "dfz11ypndzrpca"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "timesheet_fail2ban_service_up",
+            "instant": true
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "green",
+                  "value": 1
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": ""
+          },
+          "colorMode": "background",
+          "graphMode": "none",
+          "textMode": "name",
+          "justifyMode": "center"
+        }
+      },
+      {
+        "id": 34,
+        "type": "timeseries",
+        "title": "\ud83d\udcca FAIL2BAN ACTIVITY",
+        "description": "Timesheet security monitoring over time",
+        "gridPos": {
+          "x": 0,
+          "y": 24,
+          "w": 12,
+          "h": 8
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "dfz11ypndzrpca"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "timesheet_fail2ban_total_failed",
+            "legendFormat": "Failed"
+          },
+          {
+            "refId": "B",
+            "expr": "timesheet_fail2ban_total_banned",
+            "legendFormat": "Banned"
+          },
+          {
+            "refId": "C",
+            "expr": "timesheet_fail2ban_currently_banned",
+            "legendFormat": "Currently banned"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "showPoints": "auto"
+          },
+          "overrides": []
+        },
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "bottom"
+          },
+          "tooltip": {
+            "mode": "multi",
+            "sort": "desc"
+          }
+        }
+      },
+      {
+        "id": 40,
+        "type": "stat",
+        "title": "\ud83d\udd10 HARDENING SERVICE",
+        "description": "Security control health",
+        "gridPos": {
+          "x": 12,
+          "y": 24,
+          "w": 6,
+          "h": 4
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "dfz11ypndzrpca"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "timesheet_hardening_service_up",
+            "instant": true
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "green",
+                  "value": 1
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": ""
+          },
+          "colorMode": "background",
+          "graphMode": "none",
+          "textMode": "name",
+          "justifyMode": "center"
+        }
+      },
+      {
+        "id": 41,
+        "type": "stat",
+        "title": "\u2699\ufe0f SYSCTL HARDENING",
+        "description": "Security control health",
+        "gridPos": {
+          "x": 18,
+          "y": 24,
+          "w": 6,
+          "h": 4
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "dfz11ypndzrpca"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "timesheet_hardening_sysctl",
+            "instant": true
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "green",
+                  "value": 1
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": ""
+          },
+          "colorMode": "background",
+          "graphMode": "none",
+          "textMode": "name",
+          "justifyMode": "center"
+        }
+      },
+      {
+        "id": 50,
+        "type": "stat",
+        "title": "\u2620\ufe0f PODS TERMINATED",
+        "description": "Timesheet DevSecOps security metric",
+        "gridPos": {
+          "x": 0,
+          "y": 32,
+          "w": 6,
+          "h": 4
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "dfz11ypndzrpca"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "timesheet_chaos_pods_terminated_total",
+            "instant": true,
+            "legendFormat": "__auto"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 1
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": ""
+          },
+          "orientation": "auto",
+          "textMode": "auto",
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "center"
+        }
+      },
+      {
+        "id": 51,
+        "type": "stat",
+        "title": "\u2705 SUCCESSFUL TERMINATIONS",
+        "description": "Timesheet DevSecOps security metric",
+        "gridPos": {
+          "x": 6,
+          "y": 32,
+          "w": 6,
+          "h": 4
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "dfz11ypndzrpca"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "timesheet_chaos_terminations_ok_total",
+            "instant": true,
+            "legendFormat": "__auto"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 1
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": ""
+          },
+          "orientation": "auto",
+          "textMode": "auto",
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "center"
+        }
+      },
+      {
+        "id": 52,
+        "type": "stat",
+        "title": "\ud83e\uddea CHAOS DRY RUN",
+        "description": "Security control health",
+        "gridPos": {
+          "x": 12,
+          "y": 32,
+          "w": 6,
+          "h": 4
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "dfz11ypndzrpca"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "timesheet_chaos_dry_run",
+            "instant": true
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "green",
+                  "value": 1
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": ""
+          },
+          "colorMode": "background",
+          "graphMode": "none",
+          "textMode": "name",
+          "justifyMode": "center"
+        }
+      },
+      {
+        "id": 53,
+        "type": "timeseries",
+        "title": "\u2620\ufe0f CHAOS ENGINEERING ACTIVITY",
+        "description": "Timesheet security monitoring over time",
+        "gridPos": {
+          "x": 18,
+          "y": 32,
+          "w": 6,
+          "h": 8
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "dfz11ypndzrpca"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "timesheet_chaos_pods_terminated_total",
+            "legendFormat": "Pods terminated"
+          },
+          {
+            "refId": "B",
+            "expr": "timesheet_chaos_terminations_ok_total",
+            "legendFormat": "Successful"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "showPoints": "auto"
+          },
+          "overrides": []
+        },
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "bottom"
+          },
+          "tooltip": {
+            "mode": "multi",
+            "sort": "desc"
+          }
+        }
+      },
+      {
+        "id": 60,
+        "type": "stat",
+        "title": "\ud83d\ude80 SECURITY PIPELINE",
+        "description": "Security control health",
+        "gridPos": {
+          "x": 0,
+          "y": 40,
+          "w": 12,
+          "h": 5
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "dfz11ypndzrpca"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "timesheet_security_stage_status",
+            "instant": true
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "green",
+                  "value": 1
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": ""
+          },
+          "colorMode": "background",
+          "graphMode": "none",
+          "textMode": "name",
+          "justifyMode": "center"
+        }
+      },
+      {
+        "id": 61,
+        "type": "timeseries",
+        "title": "\ud83d\ude80 DEVSECOPS SECURITY MONITORING",
+        "description": "Timesheet security monitoring over time",
+        "gridPos": {
+          "x": 12,
+          "y": 40,
+          "w": 12,
+          "h": 8
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "dfz11ypndzrpca"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "timesheet_security_stage_status",
+            "legendFormat": "Security Stage"
+          },
+          {
+            "refId": "B",
+            "expr": "timesheet_hardening_service_up",
+            "legendFormat": "Hardening"
+          },
+          {
+            "refId": "C",
+            "expr": "timesheet_fail2ban_service_up",
+            "legendFormat": "Fail2ban"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "showPoints": "auto"
+          },
+          "overrides": []
+        },
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "bottom"
+          },
+          "tooltip": {
+            "mode": "multi",
+            "sort": "desc"
+          }
+        }
+      }
+    ]
+  },
+  "folderId": 0,
+  "overwrite": true,
+  "message": "Created Timesheet DevSecOps Security Command Center automatically"
+}
