@@ -128,7 +128,7 @@ cisa_cves = {
 
 with open(sys.argv[3], "w", encoding="utf-8") as f:
     for cve in sorted(cves):
-        f.write(cve + "\n")
+        f.write(cve + "\\n")
 
 print(f"CVE OWASP détectées : {len(cves)}")
 print(f"CVE présentes dans CISA KEV : {len(cves & cisa_cves)}")
@@ -313,19 +313,19 @@ with open(report_file, "w", encoding="utf-8") as f:
     json.dump(result, f, indent=2)
 
 with open(summary_file, "w", encoding="utf-8") as f:
-    f.write("========================================\n")
-    f.write("     THREAT INTELLIGENCE REPORT\n")
-    f.write("========================================\n\n")
-    f.write(f"Total CVE       : {summary['total_cves']}\n")
-    f.write(f"CISA KEV        : {summary['cisa_kev']}\n")
-    f.write(f"EPSS >= 0.70    : {summary['epss_high']}\n")
-    f.write(f"CRITICAL        : {summary['critical']}\n")
-    f.write(f"HIGH            : {summary['high']}\n")
-    f.write(f"MEDIUM          : {summary['medium']}\n")
-    f.write(f"LOW             : {summary['low']}\n\n")
+    f.write("========================================\\n")
+    f.write("     THREAT INTELLIGENCE REPORT\\n")
+    f.write("========================================\\n\\n")
+    f.write(f"Total CVE       : {summary['total_cves']}\\n")
+    f.write(f"CISA KEV        : {summary['cisa_kev']}\\n")
+    f.write(f"EPSS >= 0.70    : {summary['epss_high']}\\n")
+    f.write(f"CRITICAL        : {summary['critical']}\\n")
+    f.write(f"HIGH            : {summary['high']}\\n")
+    f.write(f"MEDIUM          : {summary['medium']}\\n")
+    f.write(f"LOW             : {summary['low']}\\n\\n")
 
-    f.write("TOP PRIORITY VULNERABILITIES\n")
-    f.write("-----------------------------\n")
+    f.write("TOP PRIORITY VULNERABILITIES\\n")
+    f.write("-----------------------------\\n")
 
     for item in items[:20]:
         f.write(
@@ -334,7 +334,7 @@ with open(summary_file, "w", encoding="utf-8") as f:
             f"severity={item['severity']} | "
             f"cvss={item['cvss']} | "
             f"epss={item['epss']} | "
-            f"KEV={item['kev']}\n"
+            f"KEV={item['kev']}\\n"
         )
 PYCORRELATION
 
