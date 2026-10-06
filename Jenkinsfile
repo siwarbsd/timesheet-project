@@ -633,6 +633,15 @@ stage('SECURITY SMOKE TESTS') {
             echo "========================================" >> "$NMAP_REPORT"
             echo "" >> "$NMAP_REPORT"
 
+            echo "Waiting for rollout..."
+            kubectl -n chap4 rollout status deploy/timesheet-dep --timeout=300s
+            for i in $(seq 1 90); do
+                if kubectl -n chap4 logs deploy/timesheet-dep 2>/dev/null | grep -q "Started "; then
+                    echo "Spring Boot started."
+                    break
+                fi
+                sleep 2
+            done
             echo "Starting Kubernetes port-forward..."
 
             kubectl port-forward -n chap4 svc/timesheet-serv 18080:8080 \
@@ -646,15 +655,15 @@ stage('SECURITY SMOKE TESTS') {
 
             echo "Waiting for application on port 18080..."
 
-            for i in $(seq 1 15); do
-                if curl -s http://127.0.0.1:18080 >/dev/null 2>&1; then
+            for i in $(seq 1 60); do
+                if curl -s -m 3 http://127.0.0.1:18080 >/dev/null 2>&1; then
                     echo "Application is reachable."
                     break
                 fi
                 sleep 2
             done
 
-            if ! curl -s http://127.0.0.1:18080 >/dev/null 2>&1; then
+            if ! curl -s -m 3 http://127.0.0.1:18080 >/dev/null 2>&1; then
                 echo "ERROR: Application is not reachable on port 18080."
                 cat /tmp/timesheet-port-forward.log
                 exit 1
