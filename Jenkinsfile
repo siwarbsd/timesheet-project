@@ -934,11 +934,19 @@ stage('SAFETY CHECKS - OSQUERY') {
                     sudo /usr/bin/fail2ban-client status jenkins >> "$REPORT"
 
                     echo "" >> "$REPORT"
-                    echo "[4] Jenkins access log" >> "$REPORT"
+                    echo "[4] SSH jail status" >> "$REPORT"
+                    sudo /usr/bin/fail2ban-client status sshd >> "$REPORT"
+
+                    echo "" >> "$REPORT"
+                    echo "[5] Recent SSH security events" >> "$REPORT"
+                    sudo /usr/bin/journalctl -u ssh --since "30 minutes ago" --no-pager >> "$REPORT"
+
+                    echo "" >> "$REPORT"
+                    echo "[6] Jenkins access log" >> "$REPORT"
                     ls -lh /var/log/jenkins/access_log >> "$REPORT"
 
                     echo "" >> "$REPORT"
-                    echo "[5] Recent Jenkins access events" >> "$REPORT"
+                    echo "[7] Recent Jenkins access events" >> "$REPORT"
                     tail -20 /var/log/jenkins/access_log >> "$REPORT"
 
                     echo "" >> "$REPORT"
